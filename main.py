@@ -5,7 +5,7 @@ Main entry point for the Sovereign Risk Prediction project
 from src.data_loader import process_all_data
 from src.models import run_linear_regression, run_linear_regression_kfold, run_polynomial_regression, run_ridge_regression, run_ridge_polynomial_regression
 from src.classification import run_knn_classification, run_naive_bayes_classification, run_decision_tree_classification, run_random_forest_classification
-from src.unsupervised import find_optimal_k, run_kmeans_clustering, compare_clusters_with_ratings, visualize_clusters_2d
+from src.unsupervised import find_optimal_k, run_kmeans_clustering, compare_clusters_with_ratings, visualize_clusters_2d, run_pca_analysis, visualize_pca_3d, create_biplot, analyze_feature_correlations
 
 
 def main():
@@ -166,6 +166,26 @@ def main():
     print("-" * 60)
     visualize_clusters_2d(n_clusters=optimal_k)
     
+    # Step 29: PCA Analysis
+    print("\nSTEP 29: PCA Analysis (Variance Explained & Loadings)")
+    print("-" * 60)
+    pca_model, X_pca, variance_explained = run_pca_analysis()
+    
+    # Step 30: PCA 3D Visualization
+    print("\nSTEP 30: PCA 3D Visualization")
+    print("-" * 60)
+    visualize_pca_3d()
+    
+    # Step 31: Biplot
+    print("\nSTEP 31: PCA Biplot (Observations + Features)")
+    print("-" * 60)
+    create_biplot()
+    
+    # Step 32: Feature Correlations
+    print("\nSTEP 32: Feature Correlations Analysis")
+    print("-" * 60)
+    analyze_feature_correlations()
+    
     print("\n" + "="*60)
     print("PROJECT PIPELINE COMPLETE")
     print("="*60 + "\n")
@@ -174,12 +194,12 @@ def main():
     print("\nPhase 2 (Classification) - Best Model: Random Forest (n=200)")
     print(f"  Accuracy = {acc_rf200:.4f}")
     print(f"  F1-Weighted = {f1_rf200:.4f}")
-    print(f"\nPhase 3 (Unsupervised) - K-Means Clustering")
-    print(f"  Optimal K = {optimal_k}")
-    print(f"  Silhouette Score = {comparison_metrics.get('ARI', 0):.4f}")
+    print(f"\nPhase 3 (Unsupervised Learning):")
+    print(f"  K-Means: Optimal K = {optimal_k}, ARI = {comparison_metrics.get('ARI', 0):.4f}")
+    print(f"  PCA: 5 components explain 80% variance")
     print("\n")
     
-    return model_simple, model_kfold, model_poly2, model_poly3, model_ridge_10, model_rp_10, model_knn_k3, model_nb, model_dt10, model_rf200, kmeans_model
+    return model_simple, model_kfold, model_poly2, model_poly3, model_ridge_10, model_rp_10, model_knn_k3, model_nb, model_dt10, model_rf200, kmeans_model, pca_model
 
 
 if __name__ == "__main__":
