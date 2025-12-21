@@ -2,8 +2,16 @@ Model,Feature,Coefficient
 Linear Regression,Interest_Rate,0.2248452662233168
 Linear Regression,GDP_Growth,0.2038749672510859
 Linear Regression,Current_Account,-0.1737962903928486
-Linear Regression,Unemployment,0.08082985097187433
-Linear Regression,Inflation,0.06928960430310936
-Linear Regression,Budget_Balance,-0.0044052669192566965
-Linear Regression,FX_Reserves,-0.0011299310388282954
-Linear Regression,Public_Debt,-0.0004762263686006351
+Linear Regression,Unemployment,0.0808298509718743
+Linear Regression,Inflation,0.0692896043031093
+Linear Regression,Budget_Balance,-0.0044052669192566
+Linear Regression,FX_Reserves,-0.0011299310388282
+Linear Regression,Public_Debt,-0.0004762263686006
+"Linear Regression (K-Fold CV, K=5)",GDP_Growth,0.22982069592076432
+"Linear Regression (K-Fold CV, K=5)",Interest_Rate,0.21870845195597458
+"Linear Regression (K-Fold CV, K=5)",Current_Account,-0.17201180624197632
+"Linear Regression (K-Fold CV, K=5)",Inflation,0.07959269263137653
+"Linear Regression (K-Fold CV, K=5)",Unemployment,0.07003625110277281
+"Linear Regression (K-Fold CV, K=5)",Budget_Balance,-0.0038098693230896046
+"Linear Regression (K-Fold CV, K=5)",FX_Reserves,-0.0011331863683907918
+"Linear Regression (K-Fold CV, K=5)",Public_Debt,-0.0007406080860024623

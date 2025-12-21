@@ -1,9 +1,8 @@
-
 import pandas as pd
 import numpy as np
 import os
 import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score, KFold
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
@@ -119,5 +118,136 @@ def create_visualization(y_true, y_pred, coefficients_df):
     print('✓ Visualization saved to: results/regression_visualization.png\n')
 
 
+
+def create_kfold_visualization(rmse_scores, mae_scores, r2_scores, k=5):
+    """
+    Create visualization for K-fold CV results
+    """
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+    
+    # Plot 1: R² scores per fold
+    folds = [f'Fold {i+1}' for i in range(k)]
+    ax1.bar(folds, r2_scores, alpha=0.7, color='steelblue', edgecolor='black')
+    ax1.axhline(y=r2_scores.mean(), color='red', linestyle='--', linewidth=2, 
+                label=f'Mean: {r2_scores.mean():.4f}')
+    ax1.set_ylabel('R² Score', fontsize=12)
+    ax1.set_title('R² Score per Fold (K-Fold CV)', fontsize=14, fontweight='bold')
+    ax1.legend()
+    ax1.grid(True, alpha=0.3, axis='y')
+    
+    # Plot 2: Box plot of all metrics
+    metrics_data = [rmse_scores, mae_scores, r2_scores]
+    ax2.boxplot(metrics_data, labels=['RMSE', 'MAE', 'R²'])
+    ax2.set_ylabel('Score', fontsize=12)
+    ax2.set_title('Distribution of Metrics (K-Fold CV)', fontsize=14, fontweight='bold')
+    ax2.grid(True, alpha=0.3, axis='y')
+    
+    plt.tight_layout()
+    
+    # Save
+    os.makedirs('../results', exist_ok=True)
+    plt.savefig('../results/kfold_cv_visualization.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    print('✓ K-fold visualization saved to: results/kfold_cv_visualization.png\n')
+
+
+def run_linear_regression_kfold(k=5):
+    """
+    Linear Regression with K-fold Cross-Validation
+    """
+    print(f'=== LINEAR REGRESSION (K-FOLD CV, K={k}) ===\n')
+    
+    # Load data
+    df = pd.read_csv('../data/processed/merged_dataset.csv')
+    
+    # Prepare X and y
+    X = df.drop(['Country', 'Year', 'Credit_Rating'], axis=1)
+    y = df['Credit_Rating']
+    
+    # Create model
+    model = LinearRegression()
+    
+    # K-fold cross-validation
+    kfold = KFold(n_splits=k, shuffle=True, random_state=42)
+    
+    # Calculate scores for each metric
+    print(f'Running {k}-fold cross-validation...\n')
+    
+    rmse_scores = -cross_val_score(model, X, y, cv=kfold, scoring='neg_root_mean_squared_error')
+    mae_scores = -cross_val_score(model, X, y, cv=kfold, scoring='neg_mean_absolute_error')
+    r2_scores = cross_val_score(model, X, y, cv=kfold, scoring='r2')
+    
+    # Print results for each fold
+    print('Results per fold:')
+    for i in range(k):
+        print(f'  Fold {i+1}: RMSE={rmse_scores[i]:.4f}, MAE={mae_scores[i]:.4f}, R²={r2_scores[i]:.4f}')
+    
+    # Calculate mean and std
+    print(f'\nAverage across {k} folds:')
+    print(f'  RMSE: {rmse_scores.mean():.4f} ± {rmse_scores.std():.4f}')
+    print(f'  MAE:  {mae_scores.mean():.4f} ± {mae_scores.std():.4f}')
+    print(f'  R²:   {r2_scores.mean():.4f} ± {r2_scores.std():.4f}\n')
+    
+    # Train final model on all data for coefficients
+    model.fit(X, y)
+    
+    # Save metrics to CSV (append mode)
+    os.makedirs('../results', exist_ok=True)
+    
+    metrics_df = pd.DataFrame({
+        'Model': [f'Linear Regression (K-Fold CV, K={k})'],
+        'Train_RMSE': [rmse_scores.mean()],
+        'Train_MAE': [mae_scores.mean()],
+        'Train_R2': [r2_scores.mean()],
+        'Test_RMSE': [rmse_scores.std()],
+        'Test_MAE': [mae_scores.std()],
+        'Test_R2': [r2_scores.std()]
+    })
+    
+    # Append to existing file
+    if os.path.exists('../results/regression_metrics.csv'):
+        existing_df = pd.read_csv('../results/regression_metrics.csv')
+        metrics_df = pd.concat([existing_df, metrics_df], ignore_index=True)
+    
+    metrics_df.to_csv('../results/regression_metrics.csv', index=False)
+    print('✓ Metrics saved to: results/regression_metrics.csv\n')
+    
+    # Save coefficients to CSV (append mode)
+    coefficients_df = pd.DataFrame({
+        'Model': [f'Linear Regression (K-Fold CV, K={k})'] * len(X.columns),
+        'Feature': X.columns,
+        'Coefficient': model.coef_
+    }).sort_values('Coefficient', key=abs, ascending=False)
+    
+    # Append to existing file
+    if os.path.exists('../results/coefficients.csv'):
+        existing_coef = pd.read_csv('../results/coefficients.csv')
+        coefficients_df = pd.concat([existing_coef, coefficients_df], ignore_index=True)
+    
+    coefficients_df.to_csv('../results/coefficients.csv', index=False)
+    print('✓ Coefficients saved to: results/coefficients.csv\n')
+    
+    # Create K-fold visualization
+    create_kfold_visualization(rmse_scores, mae_scores, r2_scores, k)
+    
+    print('=== COMPLETE ===\n')
+    
+    return model, rmse_scores, mae_scores, r2_scores
+
+
 if __name__ == "__main__":
-    run_linear_regression()
+    # Run both versions for comparison
+    print('\n' + '='*60)
+    print('VERSION 1: SIMPLE TRAIN/TEST SPLIT (80/20)')
+    print('='*60 + '\n')
+    model_simple = run_linear_regression()
+    
+    print('\n' + '='*60)
+    print('VERSION 2: K-FOLD CROSS-VALIDATION (K=5)')
+    print('='*60 + '\n')
+    model_kfold, rmse_scores, mae_scores, r2_scores = run_linear_regression_kfold(k=5)
+    
+    print('\n' + '='*60)
+    print('COMPARISON COMPLETE - Check results/regression_metrics.csv')
+    print('='*60 + '\n')
