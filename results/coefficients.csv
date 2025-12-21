@@ -53,13 +53,85 @@ Polynomial Regression (deg=2),Interest_Rate Unemployment,-0.0211268153706359
 Polynomial Regression (deg=2),GDP_Growth^2,0.0150465813279164
 Polynomial Regression (deg=2),Interest_Rate GDP_Growth,-0.0143293376870082
 Polynomial Regression (deg=2),Current_Account,0.0131722591183432
-Polynomial Regression (deg=3),Interest_Rate,1.1532040825079377
+Polynomial Regression (deg=3),Interest_Rate,1.1532040825079375
 Polynomial Regression (deg=3),Unemployment,-0.7608546248915178
 Polynomial Regression (deg=3),Current_Account,0.5604885141256678
 Polynomial Regression (deg=3),Inflation,0.2191389504040629
-Polynomial Regression (deg=3),GDP_Growth^2,0.10730484903658111
-Polynomial Regression (deg=3),Unemployment^2,0.10262572089818556
+Polynomial Regression (deg=3),GDP_Growth^2,0.1073048490365811
+Polynomial Regression (deg=3),Unemployment^2,0.1026257208981855
 Polynomial Regression (deg=3),Public_Debt,0.0989298964569765
-Polynomial Regression (deg=3),Unemployment Current_Account,-0.08962538089656129
-Polynomial Regression (deg=3),Current_Account^2,-0.06113078692396946
-Polynomial Regression (deg=3),Inflation Unemployment,0.05561846885027963
+Polynomial Regression (deg=3),Unemployment Current_Account,-0.0896253808965612
+Polynomial Regression (deg=3),Current_Account^2,-0.0611307869239694
+Polynomial Regression (deg=3),Inflation Unemployment,0.0556184688502796
+Ridge Regression (alpha=0.01),Interest_Rate,2.216300004858837
+Ridge Regression (alpha=0.01),Current_Account,-1.0044391702006064
+Ridge Regression (alpha=0.01),Inflation,0.9741137862169448
+Ridge Regression (alpha=0.01),GDP_Growth,0.8340923169325305
+Ridge Regression (alpha=0.01),FX_Reserves,-0.5328097099284969
+Ridge Regression (alpha=0.01),Budget_Balance,-0.4193677905122109
+Ridge Regression (alpha=0.01),Unemployment,0.341869982709006
+Ridge Regression (alpha=0.01),Public_Debt,-0.029551320232507
+Ridge Regression (alpha=0.1),Interest_Rate,2.216072479831826
+Ridge Regression (alpha=0.1),Current_Account,-1.0043882039219327
+Ridge Regression (alpha=0.1),Inflation,0.9741700015146868
+Ridge Regression (alpha=0.1),GDP_Growth,0.8340105917609962
+Ridge Regression (alpha=0.1),FX_Reserves,-0.5327717646692642
+Ridge Regression (alpha=0.1),Budget_Balance,-0.4193661907003245
+Ridge Regression (alpha=0.1),Unemployment,0.3418752539708509
+Ridge Regression (alpha=0.1),Public_Debt,-0.029595900877902
+Ridge Regression (alpha=1.0),Interest_Rate,2.21380154448269
+Ridge Regression (alpha=1.0),Current_Account,-1.0038788466595634
+Ridge Regression (alpha=1.0),Inflation,0.974728901632741
+Ridge Regression (alpha=1.0),GDP_Growth,0.8331942753446785
+Ridge Regression (alpha=1.0),FX_Reserves,-0.5323929103195224
+Ridge Regression (alpha=1.0),Budget_Balance,-0.4193497980193597
+Ridge Regression (alpha=1.0),Unemployment,0.3419274715031843
+Ridge Regression (alpha=1.0),Public_Debt,-0.0300404864983752
+Ridge Regression (alpha=10.0),Interest_Rate,2.191513246847298
+Ridge Regression (alpha=10.0),Current_Account,-0.9988156616933458
+Ridge Regression (alpha=10.0),Inflation,0.9800022663364304
+Ridge Regression (alpha=10.0),GDP_Growth,0.8251235297957926
+Ridge Regression (alpha=10.0),FX_Reserves,-0.5286628891695171
+Ridge Regression (alpha=10.0),Budget_Balance,-0.4191475274765249
+Ridge Regression (alpha=10.0),Unemployment,0.3424015779757103
+Ridge Regression (alpha=10.0),Public_Debt,-0.0343670511217752
+"Ridge + Polynomial (deg=2, alpha=0.01)",Interest_Rate,8.243508294973033
+"Ridge + Polynomial (deg=2, alpha=0.01)",Interest_Rate^2,-5.0579017962327875
+"Ridge + Polynomial (deg=2, alpha=0.01)",Unemployment Public_Debt,2.2074888619188373
+"Ridge + Polynomial (deg=2, alpha=0.01)",Interest_Rate Unemployment,-2.1947338364884317
+"Ridge + Polynomial (deg=2, alpha=0.01)",Interest_Rate Public_Debt,1.8677767100961231
+"Ridge + Polynomial (deg=2, alpha=0.01)",Public_Debt,-1.8142915026982576
+"Ridge + Polynomial (deg=2, alpha=0.01)",Inflation,1.539126790650324
+"Ridge + Polynomial (deg=2, alpha=0.01)",Unemployment FX_Reserves,-1.445340392421546
+"Ridge + Polynomial (deg=2, alpha=0.01)",GDP_Growth,1.4264591272477156
+"Ridge + Polynomial (deg=2, alpha=0.01)",Budget_Balance,-1.2855322461165726
+"Ridge + Polynomial (deg=2, alpha=0.1)",Interest_Rate,8.214004321590116
+"Ridge + Polynomial (deg=2, alpha=0.1)",Interest_Rate^2,-5.04560509333432
+"Ridge + Polynomial (deg=2, alpha=0.1)",Unemployment Public_Debt,2.203210853449209
+"Ridge + Polynomial (deg=2, alpha=0.1)",Interest_Rate Unemployment,-2.179859737220504
+"Ridge + Polynomial (deg=2, alpha=0.1)",Interest_Rate Public_Debt,1.8652355482050236
+"Ridge + Polynomial (deg=2, alpha=0.1)",Public_Debt,-1.807774235304132
+"Ridge + Polynomial (deg=2, alpha=0.1)",Inflation,1.547758223660512
+"Ridge + Polynomial (deg=2, alpha=0.1)",Unemployment FX_Reserves,-1.4388240293594583
+"Ridge + Polynomial (deg=2, alpha=0.1)",GDP_Growth,1.4237944408391323
+"Ridge + Polynomial (deg=2, alpha=0.1)",Budget_Balance,-1.2813583658514878
+"Ridge + Polynomial (deg=2, alpha=1.0)",Interest_Rate,7.936829668307672
+"Ridge + Polynomial (deg=2, alpha=1.0)",Interest_Rate^2,-4.926125245629612
+"Ridge + Polynomial (deg=2, alpha=1.0)",Unemployment Public_Debt,2.1597151006480737
+"Ridge + Polynomial (deg=2, alpha=1.0)",Interest_Rate Unemployment,-2.0418961976670573
+"Ridge + Polynomial (deg=2, alpha=1.0)",Interest_Rate Public_Debt,1.8399617648178723
+"Ridge + Polynomial (deg=2, alpha=1.0)",Public_Debt,-1.7439246743164678
+"Ridge + Polynomial (deg=2, alpha=1.0)",Inflation,1.6257703802803936
+"Ridge + Polynomial (deg=2, alpha=1.0)",GDP_Growth,1.3990286406170471
+"Ridge + Polynomial (deg=2, alpha=1.0)",Unemployment FX_Reserves,-1.385693433675527
+"Ridge + Polynomial (deg=2, alpha=1.0)",FX_Reserves^2,1.2488347113141387
+"Ridge + Polynomial (deg=2, alpha=10.0)",Interest_Rate,6.165547424209273
+"Ridge + Polynomial (deg=2, alpha=10.0)",Interest_Rate^2,-4.010719635369988
+"Ridge + Polynomial (deg=2, alpha=10.0)",Inflation,1.9577998106777983
+"Ridge + Polynomial (deg=2, alpha=10.0)",Unemployment Public_Debt,1.7546174368778962
+"Ridge + Polynomial (deg=2, alpha=10.0)",Interest_Rate Public_Debt,1.6365604237622304
+"Ridge + Polynomial (deg=2, alpha=10.0)",Public_Debt,-1.2711170020184983
+"Ridge + Polynomial (deg=2, alpha=10.0)",Interest_Rate Unemployment,-1.239327007003161
+"Ridge + Polynomial (deg=2, alpha=10.0)",GDP_Growth,1.2296341590694573
+"Ridge + Polynomial (deg=2, alpha=10.0)",Unemployment FX_Reserves,-1.186630016781018
+"Ridge + Polynomial (deg=2, alpha=10.0)",FX_Reserves^2,1.1501947222010491
