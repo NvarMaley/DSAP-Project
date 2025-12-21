@@ -1,6 +1,12 @@
-numpy>=1.21.0
-pandas>=1.3.0
-scikit-learn>=1.0.0
-matplotlib>=3.4.0
-seaborn>=0.11.0
-jupyter>=1.0.0
+# Core dependencies for Sovereign Risk Prediction Project
+# Phase 1: Regression Models (Linear, Polynomial, Ridge)
+
+numpy==1.24.3
+pandas==2.0.3
+scikit-learn==1.3.0
+matplotlib==3.7.2
+seaborn==0.12.2
+jupyter==1.0.0
+
+# Note: These versions ensure reproducibility of results
+# All models use random_state=42 for deterministic results
