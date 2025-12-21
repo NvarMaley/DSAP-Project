@@ -4,7 +4,7 @@ Main entry point for the Sovereign Risk Prediction project
 
 from src.data_loader import process_all_data
 from src.models import run_linear_regression, run_linear_regression_kfold, run_polynomial_regression, run_ridge_regression, run_ridge_polynomial_regression
-from src.classification import run_knn_classification, run_naive_bayes_classification
+from src.classification import run_knn_classification, run_naive_bayes_classification, run_decision_tree_classification
 
 
 def main():
@@ -110,6 +110,21 @@ def main():
     print("-" * 60)
     model_nb, acc_nb, std_acc_nb, f1_nb, std_f1_nb = run_naive_bayes_classification(cv=5)
     
+    # Step 19: Decision Tree (depth=3)
+    print("\nSTEP 19: Decision Tree Classification (depth=3, K-Fold CV)")
+    print("-" * 60)
+    model_dt3, acc_dt3, std_acc_dt3, f1_dt3, std_f1_dt3 = run_decision_tree_classification(max_depth=3, cv=5)
+    
+    # Step 20: Decision Tree (depth=5)
+    print("\nSTEP 20: Decision Tree Classification (depth=5, K-Fold CV)")
+    print("-" * 60)
+    model_dt5, acc_dt5, std_acc_dt5, f1_dt5, std_f1_dt5 = run_decision_tree_classification(max_depth=5, cv=5)
+    
+    # Step 21: Decision Tree (depth=10)
+    print("\nSTEP 21: Decision Tree Classification (depth=10, K-Fold CV)")
+    print("-" * 60)
+    model_dt10, acc_dt10, std_acc_dt10, f1_dt10, std_f1_dt10 = run_decision_tree_classification(max_depth=10, cv=5)
+    
     print("\n" + "="*60)
     print("PROJECT PIPELINE COMPLETE")
     print("="*60 + "\n")
@@ -120,7 +135,7 @@ def main():
     print(f"  F1-Weighted = {f1_k3:.4f}")
     print("\n")
     
-    return model_simple, model_kfold, model_poly2, model_poly3, model_ridge_10, model_rp_10, model_knn_k3, model_nb
+    return model_simple, model_kfold, model_poly2, model_poly3, model_ridge_10, model_rp_10, model_knn_k3, model_nb, model_dt10
 
 
 if __name__ == "__main__":
