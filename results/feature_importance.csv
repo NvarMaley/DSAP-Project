@@ -1,0 +1,9 @@
+Model,Feature,Coefficient
+Linear Regression,Interest_Rate,2.2754290825248833
+Linear Regression,Current_Account,-1.0247517202502965
+Linear Regression,Inflation,0.8636793658345798
+Linear Regression,GDP_Growth,0.7575472675126212
+Linear Regression,FX_Reserves,-0.5218833077710779
+Linear Regression,Budget_Balance,-0.4857435012243034
+Linear Regression,Unemployment,0.3809284627483646
+Linear Regression,Public_Debt,-0.01953465643626694
