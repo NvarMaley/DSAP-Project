@@ -4,7 +4,7 @@ Main entry point for the Sovereign Risk Prediction project
 
 from src.data_loader import process_all_data
 from src.models import run_linear_regression, run_linear_regression_kfold, run_polynomial_regression, run_ridge_regression, run_ridge_polynomial_regression
-from src.classification import run_knn_classification
+from src.classification import run_knn_classification, run_naive_bayes_classification
 
 
 def main():
@@ -105,6 +105,11 @@ def main():
     print("-" * 60)
     model_knn_k9, scaler_knn_k9, acc_k9, std_acc_k9, f1_k9, std_f1_k9 = run_knn_classification(k=9, cv=5)
     
+    # Step 18: Naive Bayes
+    print("\nSTEP 18: Naive Bayes Classification (K-Fold CV)")
+    print("-" * 60)
+    model_nb, acc_nb, std_acc_nb, f1_nb, std_f1_nb = run_naive_bayes_classification(cv=5)
+    
     print("\n" + "="*60)
     print("PROJECT PIPELINE COMPLETE")
     print("="*60 + "\n")
@@ -115,7 +120,7 @@ def main():
     print(f"  F1-Weighted = {f1_k3:.4f}")
     print("\n")
     
-    return model_simple, model_kfold, model_poly2, model_poly3, model_ridge_10, model_rp_10, model_knn_k3
+    return model_simple, model_kfold, model_poly2, model_poly3, model_ridge_10, model_rp_10, model_knn_k3, model_nb
 
 
 if __name__ == "__main__":
