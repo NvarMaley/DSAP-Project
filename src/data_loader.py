@@ -158,6 +158,53 @@ def merge_all_data():
     return df_merged
 
 
+def create_merged_dataset_labels():
+    """
+    Create merged dataset with credit rating LABELS (AAA, BB+, etc.) instead of numeric scores
+    For Phase 2: Classification
+    """
+    
+    print("=== CREATING MERGED DATASET WITH LABELS ===\n")
+    
+    # Load existing merged dataset (with numeric ratings)
+    df_numeric = pd.read_csv('../data/processed/merged_dataset.csv')
+    print(f"✓ Loaded merged_dataset.csv (numeric ratings)")
+    print(f"  Shape: {df_numeric.shape}")
+    
+    # Load credit ratings (labels)
+    df_ratings = pd.read_csv('../data/processed/notations_credit_cleaned.csv')
+    print(f"✓ Loaded notations_credit_cleaned.csv (labels)")
+    
+    # Transform ratings to long format
+    df_ratings_long = df_ratings.melt(id_vars=['Country'], var_name='Year', value_name='Credit_Rating_Label')
+    df_ratings_long['Year'] = df_ratings_long['Year'].astype(int)
+    print(f"✓ Transformed ratings to long format: {df_ratings_long.shape}")
+    
+    # Drop numeric Credit_Rating from df_numeric, keep only features
+    df_features = df_numeric.drop('Credit_Rating', axis=1)
+    print(f"✓ Dropped numeric Credit_Rating column")
+    
+    # Merge features with labels
+    df_merged = pd.merge(df_features, df_ratings_long, on=['Country', 'Year'], how='inner')
+    print(f"✓ Merged features with labels: {df_merged.shape}")
+    
+    # Reorder columns (Country, Year, features, then label)
+    cols = ['Country', 'Year'] + [c for c in df_merged.columns if c not in ['Country', 'Year', 'Credit_Rating_Label']] + ['Credit_Rating_Label']
+    df_merged = df_merged[cols]
+    
+    # Save to CSV
+    df_merged.to_csv('../data/processed/merged_dataset_labels.csv', index=False)
+    
+    print("\n=== MERGE WITH LABELS COMPLETE ===")
+    print(f"Final dataset shape: {df_merged.shape}")
+    print(f"  - {df_merged.shape[0]} rows (country-year observations)")
+    print(f"  - {df_merged.shape[1]} columns")
+    print(f"  - {df_merged['Credit_Rating_Label'].nunique()} unique credit rating labels")
+    print(f"Saved to: data/processed/merged_dataset_labels.csv\n")
+    
+    return df_merged
+
+
 def clean_all_data():
     """
     Main function to clean all data files
@@ -180,12 +227,16 @@ def clean_all_data():
 def process_all_data():
     """
     Complete pipeline: clean and merge all data
+    Creates both numeric and label versions for Phase 1 (Regression) and Phase 2 (Classification)
     """
     # Clean all data
     clean_all_data()
     
-    # Merge into single dataset
+    # Merge into single dataset (numeric ratings for Phase 1: Regression)
     merge_all_data()
+    
+    # Create dataset with labels (for Phase 2: Classification)
+    create_merged_dataset_labels()
 
 
 if __name__ == "__main__":

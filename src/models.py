@@ -3,8 +3,8 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, cross_val_score, KFold
-from sklearn.preprocessing import PolynomialFeatures
-from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures, StandardScaler
+from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
 
@@ -359,6 +359,193 @@ def create_polynomial_visualization(r2_scores, degree, k=5):
     plt.close()
     
     print(f'✓ Visualization saved to: results/polynomial_deg{degree}_visualization.png\n')
+
+
+def run_ridge_regression(alpha=1.0, k=5):
+    """
+    Ridge Regression on Linear features with K-fold Cross-Validation
+    """
+    print(f'=== RIDGE REGRESSION (ALPHA={alpha}, K-FOLD CV, K={k}) ===\n')
+    
+    # Load data
+    df = pd.read_csv('../data/processed/merged_dataset.csv')
+    
+    # Prepare X and y
+    X = df.drop(['Country', 'Year', 'Credit_Rating'], axis=1)
+    y = df['Credit_Rating']
+    
+    # Normalize features (REQUIRED for Ridge!)
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+    
+    print(f'Features: {X.shape[1]} (normalized)')
+    print(f'Regularization strength (alpha): {alpha}\n')
+    
+    # Create Ridge model
+    model = Ridge(alpha=alpha)
+    
+    # K-fold cross-validation
+    kfold = KFold(n_splits=k, shuffle=True, random_state=42)
+    
+    # Calculate scores for each metric
+    print(f'Running {k}-fold cross-validation...\n')
+    
+    rmse_scores = -cross_val_score(model, X_scaled, y, cv=kfold, scoring='neg_root_mean_squared_error')
+    mae_scores = -cross_val_score(model, X_scaled, y, cv=kfold, scoring='neg_mean_absolute_error')
+    r2_scores = cross_val_score(model, X_scaled, y, cv=kfold, scoring='r2')
+    
+    # Print results for each fold
+    print('Results per fold:')
+    for i in range(k):
+        print(f'  Fold {i+1}: RMSE={rmse_scores[i]:.4f}, MAE={mae_scores[i]:.4f}, R²={r2_scores[i]:.4f}')
+    
+    # Calculate mean and std
+    print(f'\nAverage across {k} folds:')
+    print(f'  RMSE: {rmse_scores.mean():.4f} ± {rmse_scores.std():.4f}')
+    print(f'  MAE:  {mae_scores.mean():.4f} ± {mae_scores.std():.4f}')
+    print(f'  R²:   {r2_scores.mean():.4f} ± {r2_scores.std():.4f}\n')
+    
+    # Train final model on all data for coefficients
+    model.fit(X_scaled, y)
+    
+    # Save metrics to CSV (append mode)
+    os.makedirs('../results', exist_ok=True)
+    
+    metrics_df = pd.DataFrame({
+        'Model': [f'Ridge Regression (alpha={alpha}, K-Fold CV, K={k})'],
+        'Mean_RMSE': [rmse_scores.mean()],
+        'Mean_MAE': [mae_scores.mean()],
+        'Mean_R2': [r2_scores.mean()],
+        'Std_RMSE': [rmse_scores.std()],
+        'Std_MAE': [mae_scores.std()],
+        'Std_R2': [r2_scores.std()]
+    })
+    
+    # Append to existing file
+    if os.path.exists('../results/regression_metrics.csv'):
+        existing_df = pd.read_csv('../results/regression_metrics.csv')
+        metrics_df = pd.concat([existing_df, metrics_df], ignore_index=True)
+    
+    metrics_df.to_csv('../results/regression_metrics.csv', index=False)
+    print('✓ Metrics saved to: results/regression_metrics.csv\n')
+    
+    # Save top 10 coefficients
+    coefficients_df = pd.DataFrame({
+        'Model': [f'Ridge Regression (alpha={alpha})'] * len(X.columns),
+        'Feature': X.columns,
+        'Coefficient': model.coef_
+    }).sort_values('Coefficient', key=abs, ascending=False).head(10)
+    
+    # Append to existing file
+    if os.path.exists('../results/coefficients.csv'):
+        existing_coef = pd.read_csv('../results/coefficients.csv')
+        coefficients_df = pd.concat([existing_coef, coefficients_df], ignore_index=True)
+    
+    coefficients_df.to_csv('../results/coefficients.csv', index=False)
+    print('✓ Coefficients saved to: results/coefficients.csv\n')
+    
+    print('=== COMPLETE ===\n')
+    
+    return model, scaler, rmse_scores, mae_scores, r2_scores
+
+
+def run_ridge_polynomial_regression(alpha=1.0, degree=2, k=5):
+    """
+    Ridge Regression on Polynomial features with K-fold Cross-Validation
+    """
+    print(f'=== RIDGE + POLYNOMIAL (DEGREE={degree}, ALPHA={alpha}, K-FOLD CV, K={k}) ===\n')
+    
+    # Load data
+    df = pd.read_csv('../data/processed/merged_dataset.csv')
+    
+    # Prepare X and y
+    X = df.drop(['Country', 'Year', 'Credit_Rating'], axis=1)
+    y = df['Credit_Rating']
+    
+    # Create polynomial features
+    poly = PolynomialFeatures(degree=degree, include_bias=False)
+    X_poly = poly.fit_transform(X)
+    
+    # Normalize polynomial features (REQUIRED for Ridge!)
+    scaler = StandardScaler()
+    X_poly_scaled = scaler.fit_transform(X_poly)
+    
+    print(f'Original features: {X.shape[1]}')
+    print(f'Polynomial features (degree={degree}): {X_poly.shape[1]}')
+    print(f'Regularization strength (alpha): {alpha}\n')
+    
+    # Create Ridge model
+    model = Ridge(alpha=alpha)
+    
+    # K-fold cross-validation
+    kfold = KFold(n_splits=k, shuffle=True, random_state=42)
+    
+    # Calculate scores for each metric
+    print(f'Running {k}-fold cross-validation...\n')
+    
+    rmse_scores = -cross_val_score(model, X_poly_scaled, y, cv=kfold, scoring='neg_root_mean_squared_error')
+    mae_scores = -cross_val_score(model, X_poly_scaled, y, cv=kfold, scoring='neg_mean_absolute_error')
+    r2_scores = cross_val_score(model, X_poly_scaled, y, cv=kfold, scoring='r2')
+    
+    # Print results for each fold
+    print('Results per fold:')
+    for i in range(k):
+        print(f'  Fold {i+1}: RMSE={rmse_scores[i]:.4f}, MAE={mae_scores[i]:.4f}, R²={r2_scores[i]:.4f}')
+    
+    # Calculate mean and std
+    print(f'\nAverage across {k} folds:')
+    print(f'  RMSE: {rmse_scores.mean():.4f} ± {rmse_scores.std():.4f}')
+    print(f'  MAE:  {mae_scores.mean():.4f} ± {mae_scores.std():.4f}')
+    print(f'  R²:   {r2_scores.mean():.4f} ± {r2_scores.std():.4f}\n')
+    
+    # Train final model on all data for coefficients
+    model.fit(X_poly_scaled, y)
+    
+    # Save metrics to CSV (append mode)
+    os.makedirs('../results', exist_ok=True)
+    
+    metrics_df = pd.DataFrame({
+        'Model': [f'Ridge + Polynomial (deg={degree}, alpha={alpha}, K-Fold CV, K={k})'],
+        'Mean_RMSE': [rmse_scores.mean()],
+        'Mean_MAE': [mae_scores.mean()],
+        'Mean_R2': [r2_scores.mean()],
+        'Std_RMSE': [rmse_scores.std()],
+        'Std_MAE': [mae_scores.std()],
+        'Std_R2': [r2_scores.std()]
+    })
+    
+    # Append to existing file
+    if os.path.exists('../results/regression_metrics.csv'):
+        existing_df = pd.read_csv('../results/regression_metrics.csv')
+        metrics_df = pd.concat([existing_df, metrics_df], ignore_index=True)
+    
+    metrics_df.to_csv('../results/regression_metrics.csv', index=False)
+    print('✓ Metrics saved to: results/regression_metrics.csv\n')
+    
+    # Save top 10 coefficients
+    feature_names = poly.get_feature_names_out(X.columns)
+    coef_importance = pd.DataFrame({
+        'Feature': feature_names,
+        'Coefficient': model.coef_
+    }).sort_values('Coefficient', key=abs, ascending=False).head(10)
+    
+    coefficients_df = pd.DataFrame({
+        'Model': [f'Ridge + Polynomial (deg={degree}, alpha={alpha})'] * 10,
+        'Feature': coef_importance['Feature'].values,
+        'Coefficient': coef_importance['Coefficient'].values
+    })
+    
+    # Append to existing file
+    if os.path.exists('../results/coefficients.csv'):
+        existing_coef = pd.read_csv('../results/coefficients.csv')
+        coefficients_df = pd.concat([existing_coef, coefficients_df], ignore_index=True)
+    
+    coefficients_df.to_csv('../results/coefficients.csv', index=False)
+    print('✓ Top 10 coefficients saved to: results/coefficients.csv\n')
+    
+    print('=== COMPLETE ===\n')
+    
+    return model, poly, scaler, rmse_scores, mae_scores, r2_scores
 
 
 if __name__ == "__main__":
