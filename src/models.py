@@ -3,6 +3,7 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, cross_val_score, KFold
+from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
@@ -197,12 +198,12 @@ def run_linear_regression_kfold(k=5):
     
     metrics_df = pd.DataFrame({
         'Model': [f'Linear Regression (K-Fold CV, K={k})'],
-        'Train_RMSE': [rmse_scores.mean()],
-        'Train_MAE': [mae_scores.mean()],
-        'Train_R2': [r2_scores.mean()],
-        'Test_RMSE': [rmse_scores.std()],
-        'Test_MAE': [mae_scores.std()],
-        'Test_R2': [r2_scores.std()]
+        'Mean_RMSE': [rmse_scores.mean()],
+        'Mean_MAE': [mae_scores.mean()],
+        'Mean_R2': [r2_scores.mean()],
+        'Std_RMSE': [rmse_scores.std()],
+        'Std_MAE': [mae_scores.std()],
+        'Std_R2': [r2_scores.std()]
     })
     
     # Append to existing file
@@ -234,6 +235,130 @@ def run_linear_regression_kfold(k=5):
     print('=== COMPLETE ===\n')
     
     return model, rmse_scores, mae_scores, r2_scores
+
+
+def run_polynomial_regression(degree=2, k=5):
+    """
+    Polynomial Regression with K-fold Cross-Validation
+    """
+    print(f'=== POLYNOMIAL REGRESSION (DEGREE={degree}, K-FOLD CV, K={k}) ===\n')
+    
+    # Load data
+    df = pd.read_csv('../data/processed/merged_dataset.csv')
+    
+    # Prepare X and y
+    X = df.drop(['Country', 'Year', 'Credit_Rating'], axis=1)
+    y = df['Credit_Rating']
+    
+    # Create polynomial features
+    poly = PolynomialFeatures(degree=degree, include_bias=False)
+    X_poly = poly.fit_transform(X)
+    
+    print(f'Original features: {X.shape[1]}')
+    print(f'Polynomial features (degree={degree}): {X_poly.shape[1]}\n')
+    
+    # Create model
+    model = LinearRegression()
+    
+    # K-fold cross-validation
+    kfold = KFold(n_splits=k, shuffle=True, random_state=42)
+    
+    # Calculate scores for each metric
+    print(f'Running {k}-fold cross-validation...\n')
+    
+    rmse_scores = -cross_val_score(model, X_poly, y, cv=kfold, scoring='neg_root_mean_squared_error')
+    mae_scores = -cross_val_score(model, X_poly, y, cv=kfold, scoring='neg_mean_absolute_error')
+    r2_scores = cross_val_score(model, X_poly, y, cv=kfold, scoring='r2')
+    
+    # Print results for each fold
+    print('Results per fold:')
+    for i in range(k):
+        print(f'  Fold {i+1}: RMSE={rmse_scores[i]:.4f}, MAE={mae_scores[i]:.4f}, R²={r2_scores[i]:.4f}')
+    
+    # Calculate mean and std
+    print(f'\nAverage across {k} folds:')
+    print(f'  RMSE: {rmse_scores.mean():.4f} ± {rmse_scores.std():.4f}')
+    print(f'  MAE:  {mae_scores.mean():.4f} ± {mae_scores.std():.4f}')
+    print(f'  R²:   {r2_scores.mean():.4f} ± {r2_scores.std():.4f}\n')
+    
+    # Train final model on all data for coefficients
+    model.fit(X_poly, y)
+    
+    # Save metrics to CSV (append mode)
+    os.makedirs('../results', exist_ok=True)
+    
+    metrics_df = pd.DataFrame({
+        'Model': [f'Polynomial Regression (deg={degree}, K-Fold CV, K={k})'],
+        'Mean_RMSE': [rmse_scores.mean()],
+        'Mean_MAE': [mae_scores.mean()],
+        'Mean_R2': [r2_scores.mean()],
+        'Std_RMSE': [rmse_scores.std()],
+        'Std_MAE': [mae_scores.std()],
+        'Std_R2': [r2_scores.std()]
+    })
+    
+    # Append to existing file
+    if os.path.exists('../results/regression_metrics.csv'):
+        existing_df = pd.read_csv('../results/regression_metrics.csv')
+        metrics_df = pd.concat([existing_df, metrics_df], ignore_index=True)
+    
+    metrics_df.to_csv('../results/regression_metrics.csv', index=False)
+    print('✓ Metrics saved to: results/regression_metrics.csv\n')
+    
+    # Save top 10 most important coefficients only (too many for polynomial)
+    feature_names = poly.get_feature_names_out(X.columns)
+    coef_importance = pd.DataFrame({
+        'Feature': feature_names,
+        'Coefficient': model.coef_
+    }).sort_values('Coefficient', key=abs, ascending=False).head(10)
+    
+    coefficients_df = pd.DataFrame({
+        'Model': [f'Polynomial Regression (deg={degree})'] * 10,
+        'Feature': coef_importance['Feature'].values,
+        'Coefficient': coef_importance['Coefficient'].values
+    })
+    
+    # Append to existing file
+    if os.path.exists('../results/coefficients.csv'):
+        existing_coef = pd.read_csv('../results/coefficients.csv')
+        coefficients_df = pd.concat([existing_coef, coefficients_df], ignore_index=True)
+    
+    coefficients_df.to_csv('../results/coefficients.csv', index=False)
+    print('✓ Top 10 coefficients saved to: results/coefficients.csv\n')
+    
+    # Create visualization
+    create_polynomial_visualization(r2_scores, degree, k)
+    
+    print('=== COMPLETE ===\n')
+    
+    return model, poly, rmse_scores, mae_scores, r2_scores
+
+
+def create_polynomial_visualization(r2_scores, degree, k=5):
+    """
+    Create visualization for Polynomial Regression results
+    """
+    fig, ax = plt.subplots(1, 1, figsize=(10, 6))
+    
+    # Bar plot: R² scores per fold
+    folds = [f'Fold {i+1}' for i in range(k)]
+    ax.bar(folds, r2_scores, alpha=0.7, color='coral', edgecolor='black')
+    ax.axhline(y=r2_scores.mean(), color='red', linestyle='--', linewidth=2, 
+                label=f'Mean: {r2_scores.mean():.4f}')
+    ax.set_ylabel('R² Score', fontsize=12)
+    ax.set_title(f'Polynomial Regression (Degree={degree})\nR² Score per Fold (K-Fold CV)', 
+                 fontsize=14, fontweight='bold')
+    ax.legend()
+    ax.grid(True, alpha=0.3, axis='y')
+    
+    plt.tight_layout()
+    
+    # Save
+    os.makedirs('../results', exist_ok=True)
+    plt.savefig(f'../results/polynomial_deg{degree}_visualization.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    print(f'✓ Visualization saved to: results/polynomial_deg{degree}_visualization.png\n')
 
 
 if __name__ == "__main__":
