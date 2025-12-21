@@ -4,7 +4,8 @@ Main entry point for the Sovereign Risk Prediction project
 
 from src.data_loader import process_all_data
 from src.models import run_linear_regression, run_linear_regression_kfold, run_polynomial_regression, run_ridge_regression, run_ridge_polynomial_regression
-from src.classification import run_knn_classification, run_naive_bayes_classification, run_decision_tree_classification
+from src.classification import run_knn_classification, run_naive_bayes_classification, run_decision_tree_classification, run_random_forest_classification
+from src.unsupervised import find_optimal_k, run_kmeans_clustering, compare_clusters_with_ratings, visualize_clusters_2d
 
 
 def main():
@@ -125,17 +126,60 @@ def main():
     print("-" * 60)
     model_dt10, acc_dt10, std_acc_dt10, f1_dt10, std_f1_dt10 = run_decision_tree_classification(max_depth=10, cv=5)
     
+    # Step 22: Random Forest (n=50)
+    print("\nSTEP 22: Random Forest Classification (n=50, K-Fold CV)")
+    print("-" * 60)
+    model_rf50, acc_rf50, std_acc_rf50, f1_rf50, std_f1_rf50 = run_random_forest_classification(n_estimators=50, cv=5)
+    
+    # Step 23: Random Forest (n=100)
+    print("\nSTEP 23: Random Forest Classification (n=100, K-Fold CV)")
+    print("-" * 60)
+    model_rf100, acc_rf100, std_acc_rf100, f1_rf100, std_f1_rf100 = run_random_forest_classification(n_estimators=100, cv=5)
+    
+    # Step 24: Random Forest (n=200)
+    print("\nSTEP 24: Random Forest Classification (n=200, K-Fold CV)")
+    print("-" * 60)
+    model_rf200, acc_rf200, std_acc_rf200, f1_rf200, std_f1_rf200 = run_random_forest_classification(n_estimators=200, cv=5)
+    
+    # PHASE 3: UNSUPERVISED LEARNING
+    print("\n" + "="*60)
+    print("PHASE 3: UNSUPERVISED LEARNING")
+    print("="*60 + "\n")
+    
+    # Step 25: Find Optimal K for K-Means
+    print("\nSTEP 25: K-Means Elbow Method (Find Optimal K)")
+    print("-" * 60)
+    optimal_k = find_optimal_k(k_range=[2, 3, 4, 5, 6, 7, 8])
+    
+    # Step 26: K-Means Clustering
+    print(f"\nSTEP 26: K-Means Clustering (K={optimal_k})")
+    print("-" * 60)
+    kmeans_model, cluster_results = run_kmeans_clustering(n_clusters=optimal_k)
+    
+    # Step 27: Compare Clusters with Ratings
+    print(f"\nSTEP 27: Compare Clusters with Credit Ratings")
+    print("-" * 60)
+    comparison_metrics = compare_clusters_with_ratings(n_clusters=optimal_k)
+    
+    # Step 28: Visualize Clusters in 2D
+    print(f"\nSTEP 28: Visualize Clusters in 2D (PCA)")
+    print("-" * 60)
+    visualize_clusters_2d(n_clusters=optimal_k)
+    
     print("\n" + "="*60)
     print("PROJECT PIPELINE COMPLETE")
     print("="*60 + "\n")
     print("Phase 1 (Regression) - Best Model: Ridge + Polynomial (alpha=10, deg=2)")
     print(f"  R² = {r2_rp10:.4f}")
-    print("\nPhase 2 (Classification) - Best Model: k-NN (k=3)")
-    print(f"  Accuracy = {acc_k3:.4f}")
-    print(f"  F1-Weighted = {f1_k3:.4f}")
+    print("\nPhase 2 (Classification) - Best Model: Random Forest (n=200)")
+    print(f"  Accuracy = {acc_rf200:.4f}")
+    print(f"  F1-Weighted = {f1_rf200:.4f}")
+    print(f"\nPhase 3 (Unsupervised) - K-Means Clustering")
+    print(f"  Optimal K = {optimal_k}")
+    print(f"  Silhouette Score = {comparison_metrics.get('ARI', 0):.4f}")
     print("\n")
     
-    return model_simple, model_kfold, model_poly2, model_poly3, model_ridge_10, model_rp_10, model_knn_k3, model_nb, model_dt10
+    return model_simple, model_kfold, model_poly2, model_poly3, model_ridge_10, model_rp_10, model_knn_k3, model_nb, model_dt10, model_rf200, kmeans_model
 
 
 if __name__ == "__main__":
