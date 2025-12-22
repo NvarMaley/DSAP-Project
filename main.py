@@ -2,6 +2,8 @@
 Main entry point for the Sovereign Risk Prediction project
 """
 
+import os
+from pathlib import Path
 from src.data_loader import process_all_data
 from src.models import run_linear_regression, run_linear_regression_kfold, run_polynomial_regression, run_ridge_regression, run_ridge_polynomial_regression
 from src.classification import run_knn_classification, run_naive_bayes_classification, run_decision_tree_classification, run_random_forest_classification
@@ -16,6 +18,19 @@ def main():
     print("\n" + "="*60)
     print("SOVEREIGN RISK PREDICTION PROJECT")
     print("="*60 + "\n")
+    
+    # Clean up previous results to avoid duplicates
+    print("Cleaning up previous results...")
+    results_files = [
+        'results/regression_metrics.csv',
+        'results/coefficients.csv',
+        'results/classification_metrics.csv'
+    ]
+    for file in results_files:
+        if os.path.exists(file):
+            os.remove(file)
+            print(f"  ✓ Removed {file}")
+    print()
     
     # Step 1: Data cleaning and merging
     print("STEP 1: Data Cleaning and Merging")
