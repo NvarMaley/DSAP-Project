@@ -20,7 +20,7 @@ pip install -r requirements.txt
 
 ### Run the Project
 ```bash
-# Option 1: Complete pipeline (38 steps, ~20-30 min)
+# Option 1: Complete pipeline
 python main.py
 
 # Option 2: Interactive notebooks
