@@ -231,7 +231,7 @@ def main():
     print("PROJECT PIPELINE COMPLETE")
     print("="*60 + "\n")
     print("Phase 1 (Regression) - Best Model: Ridge + Polynomial (alpha=10, deg=2)")
-    print(f"  R² = {r2_rp10:.4f}")
+    print(f"  R² = {r2_rp10.mean():.4f}")
     print("\nPhase 2 (Classification) - Best Model: Random Forest (n=200)")
     print(f"  Accuracy = {acc_rf200:.4f}")
     print(f"  F1-Weighted = {f1_rf200:.4f}")
