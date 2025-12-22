@@ -6,6 +6,7 @@ from src.data_loader import process_all_data
 from src.models import run_linear_regression, run_linear_regression_kfold, run_polynomial_regression, run_ridge_regression, run_ridge_polynomial_regression
 from src.classification import run_knn_classification, run_naive_bayes_classification, run_decision_tree_classification, run_random_forest_classification
 from src.unsupervised import find_optimal_k, run_kmeans_clustering, compare_clusters_with_ratings, visualize_clusters_2d, run_pca_analysis, visualize_pca_3d, create_biplot, analyze_feature_correlations
+from src.deep_learning import run_mlp_simple, run_mlp_improved, compare_mlp_with_classical
 
 
 def main():
@@ -186,6 +187,25 @@ def main():
     print("-" * 60)
     analyze_feature_correlations()
     
+    # Step 33: MLP Simple
+    print("\nSTEP 33: Deep Learning - MLP Simple")
+    print("-" * 60)
+    model_mlp_simple, history_simple, metrics_simple, le_simple = run_mlp_simple()
+    acc_mlp_simple = metrics_simple['Accuracy'].values[0]
+    f1_mlp_simple = metrics_simple['F1_Weighted'].values[0]
+    
+    # Step 34: MLP Improved
+    print("\nSTEP 34: Deep Learning - MLP Improved")
+    print("-" * 60)
+    model_mlp_improved, history_improved, metrics_improved, le_improved = run_mlp_improved()
+    acc_mlp_improved = metrics_improved['Accuracy'].values[0]
+    f1_mlp_improved = metrics_improved['F1_Weighted'].values[0]
+    
+    # Step 35: Compare MLP with Classical ML
+    print("\nSTEP 35: Compare MLP with Classical ML")
+    print("-" * 60)
+    comparison_ml = compare_mlp_with_classical()
+    
     print("\n" + "="*60)
     print("PROJECT PIPELINE COMPLETE")
     print("="*60 + "\n")
@@ -197,9 +217,13 @@ def main():
     print(f"\nPhase 3 (Unsupervised Learning):")
     print(f"  K-Means: Optimal K = {optimal_k}, ARI = {comparison_metrics.get('ARI', 0):.4f}")
     print(f"  PCA: 5 components explain 80% variance")
+    print(f"\nPhase 4 (Deep Learning):")
+    print(f"  MLP Simple: Accuracy = {acc_mlp_simple:.4f}, F1 = {f1_mlp_simple:.4f}")
+    print(f"  MLP Improved: Accuracy = {acc_mlp_improved:.4f}, F1 = {f1_mlp_improved:.4f}")
+    print(f"\nBest Overall: Random Forest (n=200) - Accuracy = {acc_rf200:.4f}")
     print("\n")
     
-    return model_simple, model_kfold, model_poly2, model_poly3, model_ridge_10, model_rp_10, model_knn_k3, model_nb, model_dt10, model_rf200, kmeans_model, pca_model
+    return model_simple, model_kfold, model_poly2, model_poly3, model_ridge_10, model_rp_10, model_knn_k3, model_nb, model_dt10, model_rf200, kmeans_model, pca_model, model_mlp_simple, model_mlp_improved
 
 
 if __name__ == "__main__":
