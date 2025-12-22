@@ -14,7 +14,7 @@
 
 ### Quick Installation
 ```bash
-cd "DSAP-Project x"
+cd DSAP-Project
 pip install -r requirements.txt
 ```
 
@@ -32,7 +32,7 @@ jupyter notebook
 ## 📁 Project Structure
 
 ```
-DSAP-Project x/
+DSAP-Project/
 ├── main.py                    # Automated pipeline (38 steps)
 ├── requirements.txt           # Python dependencies
 │
