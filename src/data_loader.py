@@ -1,5 +1,11 @@
 import pandas as pd
 import os
+from pathlib import Path
+
+# Get the project root directory (parent of src/)
+PROJECT_ROOT = Path(__file__).parent.parent
+DATA_RAW = PROJECT_ROOT / 'data' / 'raw'
+DATA_PROCESSED = PROJECT_ROOT / 'data' / 'processed'
 
 def clean_economic_data():
     """
@@ -8,7 +14,7 @@ def clean_economic_data():
     """
     
     # Create processed folder if it doesn't exist
-    os.makedirs('../data/processed', exist_ok=True)
+    os.makedirs(DATA_PROCESSED, exist_ok=True)
     
     # List of economic indicator files to clean
     economic_files = [
@@ -26,7 +32,7 @@ def clean_economic_data():
     
     for file in economic_files:
         # Load CSV file
-        df = pd.read_csv(f'../data/raw/{file}')
+        df = pd.read_csv(DATA_RAW / file)
         
         # Count missing values before interpolation
         missing_before = df.isnull().sum().sum()
@@ -46,7 +52,7 @@ def clean_economic_data():
         
         # Save cleaned file
         output_name = file.replace('_38_pays.csv', '_cleaned.csv')
-        df_cleaned.to_csv(f'../data/processed/{output_name}', index=False)
+        df_cleaned.to_csv(DATA_PROCESSED / output_name, index=False)
         
         # Print results
         print(f'✓ {file}')
@@ -62,7 +68,7 @@ def clean_credit_ratings():
     """
     
     # Load credit ratings CSV
-    df_ratings = pd.read_csv('../data/raw/notations_credit_38_pays.csv')
+    df_ratings = pd.read_csv(DATA_RAW / 'notations_credit_38_pays.csv')
     
     print("=== CLEANING CREDIT RATINGS ===\n")
     print(f"Missing values: {df_ratings.isnull().sum().sum()}")
@@ -78,7 +84,7 @@ def clean_credit_ratings():
     }
     
     # Save text version (original ratings)
-    df_ratings.to_csv('../data/processed/notations_credit_cleaned.csv', index=False)
+    df_ratings.to_csv(DATA_PROCESSED / 'notations_credit_cleaned.csv', index=False)
     print("✓ Text ratings saved: notations_credit_cleaned.csv")
     
     # Convert ratings to numerical values
@@ -87,7 +93,7 @@ def clean_credit_ratings():
         df_ratings_numerical[col] = df_ratings_numerical[col].map(rating_map)
     
     # Save numerical version
-    df_ratings_numerical.to_csv('../data/processed/notations_credit_numerical.csv', index=False)
+    df_ratings_numerical.to_csv(DATA_PROCESSED / 'notations_credit_numerical.csv', index=False)
     print("✓ Numerical ratings saved: notations_credit_numerical.csv")
     print("\n=== CREDIT RATINGS CLEANED ===\n")
 
@@ -102,15 +108,15 @@ def merge_all_data():
     
     # Load all cleaned CSV files
     print("Loading cleaned files...")
-    df_interest = pd.read_csv('../data/processed/taux_interet_cleaned.csv')
-    df_inflation = pd.read_csv('../data/processed/inflation_cleaned.csv')
-    df_unemployment = pd.read_csv('../data/processed/chomage_cleaned.csv')
-    df_gdp = pd.read_csv('../data/processed/croissance_pib_cleaned.csv')
-    df_debt = pd.read_csv('../data/processed/dette_publique_cleaned.csv')
-    df_budget = pd.read_csv('../data/processed/solde_budgetaire_cleaned.csv')
-    df_current_account = pd.read_csv('../data/processed/balance_compte_courant_cleaned.csv')
-    df_reserves = pd.read_csv('../data/processed/reserves_change_cleaned.csv')
-    df_ratings = pd.read_csv('../data/processed/notations_credit_numerical.csv')
+    df_interest = pd.read_csv(DATA_PROCESSED / 'taux_interet_cleaned.csv')
+    df_inflation = pd.read_csv(DATA_PROCESSED / 'inflation_cleaned.csv')
+    df_unemployment = pd.read_csv(DATA_PROCESSED / 'chomage_cleaned.csv')
+    df_gdp = pd.read_csv(DATA_PROCESSED / 'croissance_pib_cleaned.csv')
+    df_debt = pd.read_csv(DATA_PROCESSED / 'dette_publique_cleaned.csv')
+    df_budget = pd.read_csv(DATA_PROCESSED / 'solde_budgetaire_cleaned.csv')
+    df_current_account = pd.read_csv(DATA_PROCESSED / 'balance_compte_courant_cleaned.csv')
+    df_reserves = pd.read_csv(DATA_PROCESSED / 'reserves_change_cleaned.csv')
+    df_ratings = pd.read_csv(DATA_PROCESSED / 'notations_credit_numerical.csv')
     print("✓ All files loaded\n")
     
     # Helper function to transform from wide to long format
@@ -147,7 +153,7 @@ def merge_all_data():
     print("✓ All datasets merged\n")
     
     # Save merged dataset
-    df_merged.to_csv('../data/processed/merged_dataset.csv', index=False)
+    df_merged.to_csv(DATA_PROCESSED / 'merged_dataset.csv', index=False)
     
     print("=== MERGE COMPLETE ===")
     print(f"Final dataset shape: {df_merged.shape}")
@@ -167,12 +173,12 @@ def create_merged_dataset_labels():
     print("=== CREATING MERGED DATASET WITH LABELS ===\n")
     
     # Load existing merged dataset (with numeric ratings)
-    df_numeric = pd.read_csv('../data/processed/merged_dataset.csv')
+    df_numeric = pd.read_csv(DATA_PROCESSED / 'merged_dataset.csv')
     print(f"✓ Loaded merged_dataset.csv (numeric ratings)")
     print(f"  Shape: {df_numeric.shape}")
     
     # Load credit ratings (labels)
-    df_ratings = pd.read_csv('../data/processed/notations_credit_cleaned.csv')
+    df_ratings = pd.read_csv(DATA_PROCESSED / 'notations_credit_cleaned.csv')
     print(f"✓ Loaded notations_credit_cleaned.csv (labels)")
     
     # Transform ratings to long format
@@ -193,7 +199,7 @@ def create_merged_dataset_labels():
     df_merged = df_merged[cols]
     
     # Save to CSV
-    df_merged.to_csv('../data/processed/merged_dataset_labels.csv', index=False)
+    df_merged.to_csv(DATA_PROCESSED / 'merged_dataset_labels.csv', index=False)
     
     print("\n=== MERGE WITH LABELS COMPLETE ===")
     print(f"Final dataset shape: {df_merged.shape}")
