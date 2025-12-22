@@ -510,3 +510,462 @@ def compare_mlp_with_classical():
     print('\n=== COMPARISON COMPLETE ===\n')
     
     return comparison_df
+
+
+def compare_optimizers():
+    """
+    Compare different optimizers: SGD, Adam, RMSprop, Adagrad
+    """
+    
+    print('=== COMPARING OPTIMIZERS ===\n')
+    
+    # Load data
+    df = pd.read_csv('data/processed/merged_dataset_labels.csv')
+    X = df.drop(['Country', 'Year', 'Credit_Rating_Label'], axis=1)
+    y = df['Credit_Rating_Label']
+    
+    # Encode and normalize
+    le = LabelEncoder()
+    y_encoded = le.fit_transform(y)
+    n_classes = len(le.classes_)
+    
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+    
+    # Split data
+    X_train, X_temp, y_train, y_temp = train_test_split(X_scaled, y_encoded, test_size=0.4, random_state=42)
+    X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
+    
+    print(f'Testing 4 optimizers on MLP Improved architecture...\n')
+    
+    # Define optimizers
+    optimizers_config = [
+        {'name': 'SGD', 'optimizer': keras.optimizers.SGD(learning_rate=0.01, momentum=0.9, nesterov=True)},
+        {'name': 'Adam', 'optimizer': keras.optimizers.Adam(learning_rate=0.001)},
+        {'name': 'RMSprop', 'optimizer': keras.optimizers.RMSprop(learning_rate=0.001)},
+        {'name': 'Adagrad', 'optimizer': keras.optimizers.Adagrad(learning_rate=0.01)}
+    ]
+    
+    results = []
+    
+    for config in optimizers_config:
+        print(f"\nTraining with {config['name']}...")
+        print('-' * 60)
+        
+        tf.random.set_seed(42)
+        np.random.seed(42)
+        
+        # Build model
+        model = keras.Sequential([
+            layers.Input(shape=(X.shape[1],)),
+            layers.Dense(128, activation='relu'),
+            layers.BatchNormalization(),
+            layers.Dropout(0.3),
+            layers.Dense(64, activation='relu'),
+            layers.BatchNormalization(),
+            layers.Dropout(0.3),
+            layers.Dense(32, activation='relu'),
+            layers.Dropout(0.2),
+            layers.Dense(n_classes, activation='softmax')
+        ])
+        
+        # Compile with specific optimizer
+        model.compile(
+            optimizer=config['optimizer'],
+            loss='sparse_categorical_crossentropy',
+            metrics=['accuracy']
+        )
+        
+        # Train
+        early_stop = callbacks.EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True, verbose=0)
+        
+        history = model.fit(
+            X_train, y_train,
+            validation_data=(X_val, y_val),
+            epochs=100,
+            batch_size=32,
+            callbacks=[early_stop],
+            verbose=0
+        )
+        
+        # Evaluate
+        y_pred = np.argmax(model.predict(X_test, verbose=0), axis=1)
+        accuracy = accuracy_score(y_test, y_pred)
+        f1_weighted = f1_score(y_test, y_pred, average='weighted', zero_division=0)
+        
+        epochs_trained = len(history.history['loss'])
+        final_train_loss = history.history['loss'][-1]
+        final_val_loss = history.history['val_loss'][-1]
+        
+        results.append({
+            'Optimizer': config['name'],
+            'Accuracy': accuracy,
+            'F1_Weighted': f1_weighted,
+            'Epochs': epochs_trained,
+            'Train_Loss': final_train_loss,
+            'Val_Loss': final_val_loss
+        })
+        
+        print(f"  Accuracy: {accuracy:.4f}")
+        print(f"  F1-Weighted: {f1_weighted:.4f}")
+        print(f"  Epochs: {epochs_trained}")
+    
+    # Create results dataframe
+    results_df = pd.DataFrame(results)
+    results_df = results_df.sort_values('Accuracy', ascending=False)
+    
+    print('\n' + '='*80)
+    print('OPTIMIZER COMPARISON RESULTS')
+    print('='*80)
+    print(results_df.to_string(index=False))
+    print()
+    
+    # Save results
+    os.makedirs('results/deep_learning', exist_ok=True)
+    results_df.to_csv('results/deep_learning/optimizer_comparison.csv', index=False)
+    print('✓ Results saved to: results/deep_learning/optimizer_comparison.csv')
+    
+    # Visualize comparison
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    
+    # Accuracy
+    axes[0].bar(results_df['Optimizer'], results_df['Accuracy'], color='steelblue', alpha=0.8)
+    axes[0].set_ylabel('Accuracy', fontsize=12, fontweight='bold')
+    axes[0].set_title('Optimizer Comparison - Accuracy', fontsize=14, fontweight='bold')
+    axes[0].set_ylim(0.5, results_df['Accuracy'].max() * 1.05)
+    axes[0].grid(True, alpha=0.3, axis='y')
+    
+    for i, (opt, acc) in enumerate(zip(results_df['Optimizer'], results_df['Accuracy'])):
+        axes[0].text(i, acc + 0.01, f'{acc:.4f}', ha='center', fontsize=10, fontweight='bold')
+    
+    # Convergence (Epochs)
+    axes[1].bar(results_df['Optimizer'], results_df['Epochs'], color='coral', alpha=0.8)
+    axes[1].set_ylabel('Epochs to Converge', fontsize=12, fontweight='bold')
+    axes[1].set_title('Optimizer Comparison - Convergence Speed', fontsize=14, fontweight='bold')
+    axes[1].grid(True, alpha=0.3, axis='y')
+    
+    for i, (opt, epochs) in enumerate(zip(results_df['Optimizer'], results_df['Epochs'])):
+        axes[1].text(i, epochs + 1, f'{epochs}', ha='center', fontsize=10, fontweight='bold')
+    
+    plt.tight_layout()
+    plt.savefig('results/deep_learning/optimizer_comparison.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    print('✓ Visualization saved to: results/deep_learning/optimizer_comparison.png\n')
+    
+    best_optimizer = results_df.iloc[0]
+    print(f"Best Optimizer: {best_optimizer['Optimizer']} (Accuracy: {best_optimizer['Accuracy']:.4f})\n")
+    
+    print('=== OPTIMIZER COMPARISON COMPLETE ===\n')
+    
+    return results_df
+
+
+def compare_learning_rates():
+    """
+    Compare different learning rates: 0.0001, 0.001, 0.01, 0.1
+    """
+    
+    print('=== COMPARING LEARNING RATES ===\n')
+    
+    # Load data
+    df = pd.read_csv('data/processed/merged_dataset_labels.csv')
+    X = df.drop(['Country', 'Year', 'Credit_Rating_Label'], axis=1)
+    y = df['Credit_Rating_Label']
+    
+    # Encode and normalize
+    le = LabelEncoder()
+    y_encoded = le.fit_transform(y)
+    n_classes = len(le.classes_)
+    
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+    
+    # Split data
+    X_train, X_temp, y_train, y_temp = train_test_split(X_scaled, y_encoded, test_size=0.4, random_state=42)
+    X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
+    
+    print(f'Testing 4 learning rates with Adam optimizer...\n')
+    
+    # Define learning rates
+    learning_rates = [0.0001, 0.001, 0.01, 0.1]
+    
+    results = []
+    
+    for lr in learning_rates:
+        print(f"\nTraining with learning_rate={lr}...")
+        print('-' * 60)
+        
+        tf.random.set_seed(42)
+        np.random.seed(42)
+        
+        # Build model
+        model = keras.Sequential([
+            layers.Input(shape=(X.shape[1],)),
+            layers.Dense(128, activation='relu'),
+            layers.BatchNormalization(),
+            layers.Dropout(0.3),
+            layers.Dense(64, activation='relu'),
+            layers.BatchNormalization(),
+            layers.Dropout(0.3),
+            layers.Dense(32, activation='relu'),
+            layers.Dropout(0.2),
+            layers.Dense(n_classes, activation='softmax')
+        ])
+        
+        # Compile with specific learning rate
+        model.compile(
+            optimizer=keras.optimizers.Adam(learning_rate=lr),
+            loss='sparse_categorical_crossentropy',
+            metrics=['accuracy']
+        )
+        
+        # Train
+        early_stop = callbacks.EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True, verbose=0)
+        
+        history = model.fit(
+            X_train, y_train,
+            validation_data=(X_val, y_val),
+            epochs=100,
+            batch_size=32,
+            callbacks=[early_stop],
+            verbose=0
+        )
+        
+        # Evaluate
+        y_pred = np.argmax(model.predict(X_test, verbose=0), axis=1)
+        accuracy = accuracy_score(y_test, y_pred)
+        f1_weighted = f1_score(y_test, y_pred, average='weighted', zero_division=0)
+        
+        epochs_trained = len(history.history['loss'])
+        final_train_loss = history.history['loss'][-1]
+        final_val_loss = history.history['val_loss'][-1]
+        
+        results.append({
+            'Learning_Rate': lr,
+            'Accuracy': accuracy,
+            'F1_Weighted': f1_weighted,
+            'Epochs': epochs_trained,
+            'Train_Loss': final_train_loss,
+            'Val_Loss': final_val_loss
+        })
+        
+        print(f"  Accuracy: {accuracy:.4f}")
+        print(f"  F1-Weighted: {f1_weighted:.4f}")
+        print(f"  Epochs: {epochs_trained}")
+    
+    # Create results dataframe
+    results_df = pd.DataFrame(results)
+    results_df = results_df.sort_values('Accuracy', ascending=False)
+    
+    print('\n' + '='*80)
+    print('LEARNING RATE COMPARISON RESULTS')
+    print('='*80)
+    print(results_df.to_string(index=False))
+    print()
+    
+    # Save results
+    os.makedirs('results/deep_learning', exist_ok=True)
+    results_df.to_csv('results/deep_learning/learning_rate_comparison.csv', index=False)
+    print('✓ Results saved to: results/deep_learning/learning_rate_comparison.csv')
+    
+    # Visualize comparison
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    
+    # Accuracy vs LR
+    axes[0].plot(results_df['Learning_Rate'], results_df['Accuracy'], 'bo-', linewidth=2, markersize=10)
+    axes[0].set_xscale('log')
+    axes[0].set_xlabel('Learning Rate (log scale)', fontsize=12, fontweight='bold')
+    axes[0].set_ylabel('Accuracy', fontsize=12, fontweight='bold')
+    axes[0].set_title('Learning Rate vs Accuracy', fontsize=14, fontweight='bold')
+    axes[0].grid(True, alpha=0.3)
+    
+    for lr, acc in zip(results_df['Learning_Rate'], results_df['Accuracy']):
+        axes[0].text(lr, acc + 0.01, f'{acc:.4f}', ha='center', fontsize=9)
+    
+    # Convergence speed
+    axes[1].bar([str(lr) for lr in results_df['Learning_Rate']], results_df['Epochs'], color='coral', alpha=0.8)
+    axes[1].set_xlabel('Learning Rate', fontsize=12, fontweight='bold')
+    axes[1].set_ylabel('Epochs to Converge', fontsize=12, fontweight='bold')
+    axes[1].set_title('Learning Rate vs Convergence Speed', fontsize=14, fontweight='bold')
+    axes[1].grid(True, alpha=0.3, axis='y')
+    
+    for i, (lr, epochs) in enumerate(zip(results_df['Learning_Rate'], results_df['Epochs'])):
+        axes[1].text(i, epochs + 1, f'{epochs}', ha='center', fontsize=10, fontweight='bold')
+    
+    plt.tight_layout()
+    plt.savefig('results/deep_learning/learning_rate_comparison.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    print('✓ Visualization saved to: results/deep_learning/learning_rate_comparison.png\n')
+    
+    best_lr = results_df.iloc[0]
+    print(f"Best Learning Rate: {best_lr['Learning_Rate']} (Accuracy: {best_lr['Accuracy']:.4f})\n")
+    
+    print('=== LEARNING RATE COMPARISON COMPLETE ===\n')
+    
+    return results_df
+
+
+def compare_l2_regularization():
+    """
+    Compare different L2 regularization strengths: 0, 0.001, 0.01, 0.1
+    """
+    
+    print('=== COMPARING L2 REGULARIZATION ===\n')
+    
+    from tensorflow.keras import regularizers
+    
+    # Load data
+    df = pd.read_csv('data/processed/merged_dataset_labels.csv')
+    X = df.drop(['Country', 'Year', 'Credit_Rating_Label'], axis=1)
+    y = df['Credit_Rating_Label']
+    
+    # Encode and normalize
+    le = LabelEncoder()
+    y_encoded = le.fit_transform(y)
+    n_classes = len(le.classes_)
+    
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+    
+    # Split data
+    X_train, X_temp, y_train, y_temp = train_test_split(X_scaled, y_encoded, test_size=0.4, random_state=42)
+    X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
+    
+    print(f'Testing 4 L2 regularization strengths...\n')
+    
+    # Define L2 strengths
+    l2_strengths = [0, 0.001, 0.01, 0.1]
+    
+    results = []
+    
+    for l2 in l2_strengths:
+        print(f"\nTraining with L2={l2}...")
+        print('-' * 60)
+        
+        tf.random.set_seed(42)
+        np.random.seed(42)
+        
+        # Build model with L2 regularization
+        if l2 == 0:
+            model = keras.Sequential([
+                layers.Input(shape=(X.shape[1],)),
+                layers.Dense(128, activation='relu'),
+                layers.BatchNormalization(),
+                layers.Dropout(0.3),
+                layers.Dense(64, activation='relu'),
+                layers.BatchNormalization(),
+                layers.Dropout(0.3),
+                layers.Dense(32, activation='relu'),
+                layers.Dropout(0.2),
+                layers.Dense(n_classes, activation='softmax')
+            ])
+        else:
+            model = keras.Sequential([
+                layers.Input(shape=(X.shape[1],)),
+                layers.Dense(128, activation='relu', kernel_regularizer=regularizers.l2(l2)),
+                layers.BatchNormalization(),
+                layers.Dropout(0.3),
+                layers.Dense(64, activation='relu', kernel_regularizer=regularizers.l2(l2)),
+                layers.BatchNormalization(),
+                layers.Dropout(0.3),
+                layers.Dense(32, activation='relu', kernel_regularizer=regularizers.l2(l2)),
+                layers.Dropout(0.2),
+                layers.Dense(n_classes, activation='softmax')
+            ])
+        
+        # Compile
+        model.compile(
+            optimizer=keras.optimizers.Adam(learning_rate=0.001),
+            loss='sparse_categorical_crossentropy',
+            metrics=['accuracy']
+        )
+        
+        # Train
+        early_stop = callbacks.EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True, verbose=0)
+        
+        history = model.fit(
+            X_train, y_train,
+            validation_data=(X_val, y_val),
+            epochs=100,
+            batch_size=32,
+            callbacks=[early_stop],
+            verbose=0
+        )
+        
+        # Evaluate
+        y_pred = np.argmax(model.predict(X_test, verbose=0), axis=1)
+        accuracy = accuracy_score(y_test, y_pred)
+        f1_weighted = f1_score(y_test, y_pred, average='weighted', zero_division=0)
+        
+        epochs_trained = len(history.history['loss'])
+        final_train_loss = history.history['loss'][-1]
+        final_val_loss = history.history['val_loss'][-1]
+        overfitting_gap = final_train_loss - final_val_loss
+        
+        results.append({
+            'L2_Strength': l2,
+            'Accuracy': accuracy,
+            'F1_Weighted': f1_weighted,
+            'Epochs': epochs_trained,
+            'Train_Loss': final_train_loss,
+            'Val_Loss': final_val_loss,
+            'Overfitting_Gap': overfitting_gap
+        })
+        
+        print(f"  Accuracy: {accuracy:.4f}")
+        print(f"  F1-Weighted: {f1_weighted:.4f}")
+        print(f"  Overfitting Gap: {overfitting_gap:.4f}")
+    
+    # Create results dataframe
+    results_df = pd.DataFrame(results)
+    results_df = results_df.sort_values('Accuracy', ascending=False)
+    
+    print('\n' + '='*80)
+    print('L2 REGULARIZATION COMPARISON RESULTS')
+    print('='*80)
+    print(results_df.to_string(index=False))
+    print()
+    
+    # Save results
+    os.makedirs('results/deep_learning', exist_ok=True)
+    results_df.to_csv('results/deep_learning/l2_regularization_comparison.csv', index=False)
+    print('✓ Results saved to: results/deep_learning/l2_regularization_comparison.csv')
+    
+    # Visualize comparison
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    
+    # Accuracy vs L2
+    axes[0].plot([str(l2) for l2 in results_df['L2_Strength']], results_df['Accuracy'], 'go-', linewidth=2, markersize=10)
+    axes[0].set_xlabel('L2 Regularization Strength', fontsize=12, fontweight='bold')
+    axes[0].set_ylabel('Accuracy', fontsize=12, fontweight='bold')
+    axes[0].set_title('L2 Regularization vs Accuracy', fontsize=14, fontweight='bold')
+    axes[0].grid(True, alpha=0.3)
+    
+    for i, (l2, acc) in enumerate(zip(results_df['L2_Strength'], results_df['Accuracy'])):
+        axes[0].text(i, acc + 0.01, f'{acc:.4f}', ha='center', fontsize=9)
+    
+    # Overfitting gap
+    axes[1].bar([str(l2) for l2 in results_df['L2_Strength']], results_df['Overfitting_Gap'], color='coral', alpha=0.8)
+    axes[1].set_xlabel('L2 Regularization Strength', fontsize=12, fontweight='bold')
+    axes[1].set_ylabel('Overfitting Gap (Train - Val Loss)', fontsize=12, fontweight='bold')
+    axes[1].set_title('L2 Regularization vs Overfitting', fontsize=14, fontweight='bold')
+    axes[1].grid(True, alpha=0.3, axis='y')
+    axes[1].axhline(y=0, color='red', linestyle='--', alpha=0.5)
+    
+    for i, (l2, gap) in enumerate(zip(results_df['L2_Strength'], results_df['Overfitting_Gap'])):
+        axes[1].text(i, gap + 0.01, f'{gap:.4f}', ha='center', fontsize=9, fontweight='bold')
+    
+    plt.tight_layout()
+    plt.savefig('results/deep_learning/l2_regularization_comparison.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    print('✓ Visualization saved to: results/deep_learning/l2_regularization_comparison.png\n')
+    
+    best_l2 = results_df.iloc[0]
+    print(f"Best L2 Strength: {best_l2['L2_Strength']} (Accuracy: {best_l2['Accuracy']:.4f})\n")
+    
+    print('=== L2 REGULARIZATION COMPARISON COMPLETE ===\n')
+    
+    return results_df

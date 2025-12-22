@@ -6,7 +6,7 @@ from src.data_loader import process_all_data
 from src.models import run_linear_regression, run_linear_regression_kfold, run_polynomial_regression, run_ridge_regression, run_ridge_polynomial_regression
 from src.classification import run_knn_classification, run_naive_bayes_classification, run_decision_tree_classification, run_random_forest_classification
 from src.unsupervised import find_optimal_k, run_kmeans_clustering, compare_clusters_with_ratings, visualize_clusters_2d, run_pca_analysis, visualize_pca_3d, create_biplot, analyze_feature_correlations
-from src.deep_learning import run_mlp_simple, run_mlp_improved, compare_mlp_with_classical
+from src.deep_learning import run_mlp_simple, run_mlp_improved, compare_mlp_with_classical, compare_optimizers, compare_learning_rates, compare_l2_regularization
 
 
 def main():
@@ -206,6 +206,27 @@ def main():
     print("-" * 60)
     comparison_ml = compare_mlp_with_classical()
     
+    # Step 36: Compare Optimizers
+    print("\nSTEP 36: Training Techniques - Compare Optimizers")
+    print("-" * 60)
+    results_optimizers = compare_optimizers()
+    best_optimizer = results_optimizers.iloc[0]['Optimizer']
+    best_opt_acc = results_optimizers.iloc[0]['Accuracy']
+    
+    # Step 37: Compare Learning Rates
+    print("\nSTEP 37: Training Techniques - Compare Learning Rates")
+    print("-" * 60)
+    results_lr = compare_learning_rates()
+    best_lr = results_lr.iloc[0]['Learning_Rate']
+    best_lr_acc = results_lr.iloc[0]['Accuracy']
+    
+    # Step 38: Compare L2 Regularization
+    print("\nSTEP 38: Training Techniques - Compare L2 Regularization")
+    print("-" * 60)
+    results_l2 = compare_l2_regularization()
+    best_l2 = results_l2.iloc[0]['L2_Strength']
+    best_l2_acc = results_l2.iloc[0]['Accuracy']
+    
     print("\n" + "="*60)
     print("PROJECT PIPELINE COMPLETE")
     print("="*60 + "\n")
@@ -218,8 +239,13 @@ def main():
     print(f"  K-Means: Optimal K = {optimal_k}, ARI = {comparison_metrics.get('ARI', 0):.4f}")
     print(f"  PCA: 5 components explain 80% variance")
     print(f"\nPhase 4 (Deep Learning):")
-    print(f"  MLP Simple: Accuracy = {acc_mlp_simple:.4f}, F1 = {f1_mlp_simple:.4f}")
-    print(f"  MLP Improved: Accuracy = {acc_mlp_improved:.4f}, F1 = {f1_mlp_improved:.4f}")
+    print(f"  4.1 MLP Architectures:")
+    print(f"    - MLP Simple: Accuracy = {acc_mlp_simple:.4f}")
+    print(f"    - MLP Improved: Accuracy = {acc_mlp_improved:.4f}")
+    print(f"  4.2 Training Techniques:")
+    print(f"    - Best Optimizer: {best_optimizer} (Acc = {best_opt_acc:.4f})")
+    print(f"    - Best Learning Rate: {best_lr} (Acc = {best_lr_acc:.4f})")
+    print(f"    - Best L2 Regularization: {best_l2} (Acc = {best_l2_acc:.4f})")
     print(f"\nBest Overall: Random Forest (n=200) - Accuracy = {acc_rf200:.4f}")
     print("\n")
     
