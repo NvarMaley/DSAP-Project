@@ -11,10 +11,16 @@
 ### Prerequisites
 - Python 3.8+
 - pip
+- Git
 
-### Quick Installation
+### Clone the Repository
 ```bash
+git clone https://github.com/YOUR_USERNAME/DSAP-Project.git
 cd DSAP-Project
+```
+
+### Install Dependencies
+```bash
 pip install -r requirements.txt
 ```
 
