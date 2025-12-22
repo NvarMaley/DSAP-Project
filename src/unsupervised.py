@@ -8,12 +8,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
+from pathlib import Path
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score, adjusted_rand_score, normalized_mutual_info_score
 import warnings
 warnings.filterwarnings('ignore')
+
+# Get the project root directory (parent of src/)
+PROJECT_ROOT = Path(__file__).parent.parent
+DATA_PROCESSED = PROJECT_ROOT / 'data' / 'processed'
+RESULTS_DIR = PROJECT_ROOT / 'results'
 
 
 def find_optimal_k(k_range=[2, 3, 4, 5, 6, 7, 8]):
@@ -30,7 +36,7 @@ def find_optimal_k(k_range=[2, 3, 4, 5, 6, 7, 8]):
     print('=== FINDING OPTIMAL K FOR K-MEANS CLUSTERING ===\n')
     
     # Load data
-    df = pd.read_csv('data/processed/merged_dataset_labels.csv')
+    df = pd.read_csv(DATA_PROCESSED / 'merged_dataset_labels.csv')
     
     # Extract features (8 economic indicators)
     X = df.drop(['Country', 'Year', 'Credit_Rating_Label'], axis=1)
@@ -119,7 +125,7 @@ def run_kmeans_clustering(n_clusters=4):
     print(f'=== K-MEANS CLUSTERING (K={n_clusters}) ===\n')
     
     # Load data
-    df = pd.read_csv('data/processed/merged_dataset_labels.csv')
+    df = pd.read_csv(DATA_PROCESSED / 'merged_dataset_labels.csv')
     
     # Keep identifiers separate
     identifiers = df[['Country', 'Year']]
@@ -206,7 +212,7 @@ def run_kmeans_clustering(n_clusters=4):
     os.makedirs('results/clustering', exist_ok=True)
     
     # Save country-level results
-    output_path = 'results/clustering/country_clusters.csv'
+    output_path = RESULTS_DIR / 'clustering' / 'country_clusters.csv'
     results_df.to_csv(output_path, index=False)
     print(f'✓ Country cluster assignments saved to: {output_path}')
     
@@ -225,7 +231,7 @@ def run_kmeans_clustering(n_clusters=4):
         cluster_profiles.append(profile)
     
     profiles_df = pd.DataFrame(cluster_profiles)
-    profiles_path = 'results/clustering/cluster_profiles.csv'
+    profiles_path = RESULTS_DIR / 'clustering' / 'cluster_profiles.csv'
     profiles_df.to_csv(profiles_path, index=False)
     print(f'✓ Cluster profiles saved to: {profiles_path}\n')
     
@@ -248,7 +254,7 @@ def compare_clusters_with_ratings(n_clusters=4):
     print('=== COMPARING CLUSTERS WITH CREDIT RATINGS ===\n')
     
     # Load clustering results
-    results_df = pd.read_csv('results/clustering/country_clusters.csv')
+    results_df = pd.read_csv(RESULTS_DIR / 'clustering' / 'country_clusters.csv')
     
     # Group ratings into categories
     def rating_to_category(rating):
@@ -361,8 +367,8 @@ def visualize_clusters_2d(n_clusters=4):
     print('=== VISUALIZING CLUSTERS IN 2D (PCA) ===\n')
     
     # Load data
-    df = pd.read_csv('data/processed/merged_dataset_labels.csv')
-    results_df = pd.read_csv('results/clustering/country_clusters.csv')
+    df = pd.read_csv(DATA_PROCESSED / 'merged_dataset_labels.csv')
+    results_df = pd.read_csv(RESULTS_DIR / 'clustering' / 'country_clusters.csv')
     
     # Extract features
     X = df.drop(['Country', 'Year', 'Credit_Rating_Label'], axis=1)
@@ -451,7 +457,7 @@ def run_pca_analysis(n_components=None):
     print('=== PCA ANALYSIS ===\n')
     
     # Load data
-    df = pd.read_csv('data/processed/merged_dataset_labels.csv')
+    df = pd.read_csv(DATA_PROCESSED / 'merged_dataset_labels.csv')
     
     # Extract features
     X = df.drop(['Country', 'Year', 'Credit_Rating_Label'], axis=1)
@@ -564,7 +570,7 @@ def run_pca_analysis(n_components=None):
         'Cumulative_Variance': variance_cumulative
     })
     
-    output_path = 'results/pca/pca_analysis.csv'
+    output_path = RESULTS_DIR / 'pca' / 'pca_analysis.csv'
     results_df.to_csv(output_path, index=False)
     print(f'✓ PCA analysis saved to: {output_path}\n')
     
@@ -581,7 +587,7 @@ def visualize_pca_3d():
     print('=== PCA 3D VISUALIZATION ===\n')
     
     # Load data
-    df = pd.read_csv('data/processed/merged_dataset_labels.csv')
+    df = pd.read_csv(DATA_PROCESSED / 'merged_dataset_labels.csv')
     
     identifiers = df[['Country', 'Year']]
     labels = df['Credit_Rating_Label']
@@ -652,7 +658,7 @@ def create_biplot():
     print('=== CREATING BIPLOT ===\n')
     
     # Load data
-    df = pd.read_csv('data/processed/merged_dataset_labels.csv')
+    df = pd.read_csv(DATA_PROCESSED / 'merged_dataset_labels.csv')
     
     labels = df['Credit_Rating_Label']
     X = df.drop(['Country', 'Year', 'Credit_Rating_Label'], axis=1)
@@ -732,7 +738,7 @@ def analyze_feature_correlations():
     print('=== FEATURE CORRELATIONS ANALYSIS ===\n')
     
     # Load data
-    df = pd.read_csv('data/processed/merged_dataset_labels.csv')
+    df = pd.read_csv(DATA_PROCESSED / 'merged_dataset_labels.csv')
     X = df.drop(['Country', 'Year', 'Credit_Rating_Label'], axis=1)
     feature_names = X.columns.tolist()
     

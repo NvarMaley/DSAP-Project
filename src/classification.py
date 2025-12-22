@@ -3,6 +3,7 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 import seaborn as sns
+from pathlib import Path
 from sklearn.model_selection import StratifiedKFold, cross_val_score, cross_val_predict
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
@@ -10,6 +11,11 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix, classification_report, accuracy_score, f1_score
+
+# Get the project root directory (parent of src/)
+PROJECT_ROOT = Path(__file__).parent.parent
+DATA_PROCESSED = PROJECT_ROOT / 'data' / 'processed'
+RESULTS_DIR = PROJECT_ROOT / 'results'
 
 
 def run_knn_classification(k=5, cv=5):
@@ -32,7 +38,7 @@ def run_knn_classification(k=5, cv=5):
     print(f'=== k-NN CLASSIFICATION (k={k}) ===\n')
     
     # Load data
-    df = pd.read_csv('data/processed/merged_dataset_labels.csv')
+    df = pd.read_csv(DATA_PROCESSED / 'merged_dataset_labels.csv')
     
     # Prepare X and y
     X = df.drop(['Country', 'Year', 'Credit_Rating_Label'], axis=1)
@@ -95,7 +101,7 @@ def run_knn_classification(k=5, cv=5):
     })
     
     # Append to existing file or create new one
-    metrics_file = 'results/classification_metrics.csv'
+    metrics_file = RESULTS_DIR / 'classification_metrics.csv'
     if os.path.exists(metrics_file):
         existing_df = pd.read_csv(metrics_file)
         metrics_df = pd.concat([existing_df, metrics_df], ignore_index=True)
@@ -181,7 +187,7 @@ def run_naive_bayes_classification(cv=5):
     print('=== NAIVE BAYES CLASSIFICATION ===\n')
     
     # Load data
-    df = pd.read_csv('data/processed/merged_dataset_labels.csv')
+    df = pd.read_csv(DATA_PROCESSED / 'merged_dataset_labels.csv')
     
     # Prepare X and y
     X = df.drop(['Country', 'Year', 'Credit_Rating_Label'], axis=1)
@@ -239,7 +245,7 @@ def run_naive_bayes_classification(cv=5):
     })
     
     # Append to existing file or create new one
-    metrics_file = 'results/classification_metrics.csv'
+    metrics_file = RESULTS_DIR / 'classification_metrics.csv'
     if os.path.exists(metrics_file):
         existing_df = pd.read_csv(metrics_file)
         metrics_df = pd.concat([existing_df, metrics_df], ignore_index=True)
@@ -325,7 +331,7 @@ def run_decision_tree_classification(max_depth=5, cv=5):
     print(f'=== DECISION TREE CLASSIFICATION (max_depth={max_depth}) ===\n')
     
     # Load data
-    df = pd.read_csv('data/processed/merged_dataset_labels.csv')
+    df = pd.read_csv(DATA_PROCESSED / 'merged_dataset_labels.csv')
     
     # Prepare X and y
     X = df.drop(['Country', 'Year', 'Credit_Rating_Label'], axis=1)
@@ -387,7 +393,7 @@ def run_decision_tree_classification(max_depth=5, cv=5):
     })
     
     # Append to existing file
-    metrics_file = 'results/classification_metrics.csv'
+    metrics_file = RESULTS_DIR / 'classification_metrics.csv'
     if os.path.exists(metrics_file):
         existing_df = pd.read_csv(metrics_file)
         metrics_df = pd.concat([existing_df, metrics_df], ignore_index=True)
@@ -497,7 +503,7 @@ def run_random_forest_classification(n_estimators=100, cv=5):
     print(f'=== RANDOM FOREST CLASSIFICATION (n_estimators={n_estimators}) ===\n')
     
     # Load data
-    df = pd.read_csv('data/processed/merged_dataset_labels.csv')
+    df = pd.read_csv(DATA_PROCESSED / 'merged_dataset_labels.csv')
     
     # Prepare X and y
     X = df.drop(['Country', 'Year', 'Credit_Rating_Label'], axis=1)
@@ -561,7 +567,7 @@ def run_random_forest_classification(n_estimators=100, cv=5):
     })
     
     # Append to existing file
-    metrics_file = 'results/classification_metrics.csv'
+    metrics_file = RESULTS_DIR / 'classification_metrics.csv'
     if os.path.exists(metrics_file):
         existing_df = pd.read_csv(metrics_file)
         metrics_df = pd.concat([existing_df, metrics_df], ignore_index=True)
@@ -670,7 +676,7 @@ def create_comparison_visualization():
     print('=== CREATING CLASSIFICATION MODELS COMPARISON VISUALIZATION ===\n')
     
     # Load classification metrics
-    df = pd.read_csv('results/classification_metrics.csv')
+    df = pd.read_csv(RESULTS_DIR / 'classification_metrics.csv')
     print(f'Loaded {len(df)} models from classification_metrics.csv\n')
     
     # Create figure with multiple subplots

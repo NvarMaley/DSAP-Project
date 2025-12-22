@@ -2,10 +2,16 @@ import pandas as pd
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+from pathlib import Path
 from sklearn.model_selection import train_test_split, cross_val_score, KFold
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+
+# Get the project root directory (parent of src/)
+PROJECT_ROOT = Path(__file__).parent.parent
+DATA_PROCESSED = PROJECT_ROOT / 'data' / 'processed'
+RESULTS_DIR = PROJECT_ROOT / 'results'
 
 
 def run_linear_regression():
@@ -15,7 +21,7 @@ def run_linear_regression():
     print('=== LINEAR REGRESSION ===\n')
     
     # Load data
-    df = pd.read_csv('../data/processed/merged_dataset.csv')
+    df = pd.read_csv(DATA_PROCESSED / 'merged_dataset.csv')
     
     # Prepare X and y
     X = df.drop(['Country', 'Year', 'Credit_Rating'], axis=1)
@@ -53,7 +59,7 @@ def run_linear_regression():
     print(f'  R²:   {test_r2:.4f}\n')
     
     # Save metrics to CSV
-    os.makedirs('../results', exist_ok=True)
+    os.makedirs(RESULTS_DIR, exist_ok=True)
     
     metrics_df = pd.DataFrame({
         'Model': ['Linear Regression'],
@@ -64,7 +70,7 @@ def run_linear_regression():
         'Test_MAE': [test_mae],
         'Test_R2': [test_r2]
     })
-    metrics_df.to_csv('../results/regression_metrics.csv', index=False)
+    metrics_df.to_csv(RESULTS_DIR / 'regression_metrics.csv', index=False)
     print('✓ Metrics saved to: results/regression_metrics.csv\n')
     
     # Save coefficients to CSV with Model column
@@ -74,7 +80,7 @@ def run_linear_regression():
         'Coefficient': model.coef_
     }).sort_values('Coefficient', key=abs, ascending=False)
     
-    coefficients_df.to_csv('../results/coefficients.csv', index=False)
+    coefficients_df.to_csv(RESULTS_DIR / 'coefficients.csv', index=False)
     print('✓ Coefficients saved to: results/coefficients.csv\n')
     
     # Create visualization
@@ -112,8 +118,8 @@ def create_visualization(y_true, y_pred, coefficients_df):
     plt.tight_layout()
     
     # Save
-    os.makedirs('../results', exist_ok=True)
-    plt.savefig('../results/regression_visualization.png', dpi=300, bbox_inches='tight')
+    os.makedirs(RESULTS_DIR, exist_ok=True)
+    plt.savefig(RESULTS_DIR / 'regression_visualization.png', dpi=300, bbox_inches='tight')
     plt.close()
     
     print('✓ Visualization saved to: results/regression_visualization.png\n')
@@ -146,8 +152,8 @@ def create_kfold_visualization(rmse_scores, mae_scores, r2_scores, k=5):
     plt.tight_layout()
     
     # Save
-    os.makedirs('../results', exist_ok=True)
-    plt.savefig('../results/kfold_cv_visualization.png', dpi=300, bbox_inches='tight')
+    os.makedirs(RESULTS_DIR, exist_ok=True)
+    plt.savefig(RESULTS_DIR / 'kfold_cv_visualization.png', dpi=300, bbox_inches='tight')
     plt.close()
     
     print('✓ K-fold visualization saved to: results/kfold_cv_visualization.png\n')
@@ -160,7 +166,7 @@ def run_linear_regression_kfold(k=5):
     print(f'=== LINEAR REGRESSION (K-FOLD CV, K={k}) ===\n')
     
     # Load data
-    df = pd.read_csv('../data/processed/merged_dataset.csv')
+    df = pd.read_csv(DATA_PROCESSED / 'merged_dataset.csv')
     
     # Prepare X and y
     X = df.drop(['Country', 'Year', 'Credit_Rating'], axis=1)
@@ -194,7 +200,7 @@ def run_linear_regression_kfold(k=5):
     model.fit(X, y)
     
     # Save metrics to CSV (append mode)
-    os.makedirs('../results', exist_ok=True)
+    os.makedirs(RESULTS_DIR, exist_ok=True)
     
     metrics_df = pd.DataFrame({
         'Model': [f'Linear Regression (K-Fold CV, K={k})'],
@@ -207,11 +213,11 @@ def run_linear_regression_kfold(k=5):
     })
     
     # Append to existing file
-    if os.path.exists('../results/regression_metrics.csv'):
-        existing_df = pd.read_csv('../results/regression_metrics.csv')
+    if os.path.exists(RESULTS_DIR / 'regression_metrics.csv'):
+        existing_df = pd.read_csv(RESULTS_DIR / 'regression_metrics.csv')
         metrics_df = pd.concat([existing_df, metrics_df], ignore_index=True)
     
-    metrics_df.to_csv('../results/regression_metrics.csv', index=False)
+    metrics_df.to_csv(RESULTS_DIR / 'regression_metrics.csv', index=False)
     print('✓ Metrics saved to: results/regression_metrics.csv\n')
     
     # Save coefficients to CSV (append mode)
@@ -222,11 +228,11 @@ def run_linear_regression_kfold(k=5):
     }).sort_values('Coefficient', key=abs, ascending=False)
     
     # Append to existing file
-    if os.path.exists('../results/coefficients.csv'):
-        existing_coef = pd.read_csv('../results/coefficients.csv')
+    if os.path.exists(RESULTS_DIR / 'coefficients.csv'):
+        existing_coef = pd.read_csv(RESULTS_DIR / 'coefficients.csv')
         coefficients_df = pd.concat([existing_coef, coefficients_df], ignore_index=True)
     
-    coefficients_df.to_csv('../results/coefficients.csv', index=False)
+    coefficients_df.to_csv(RESULTS_DIR / 'coefficients.csv', index=False)
     print('✓ Coefficients saved to: results/coefficients.csv\n')
     
     # Create K-fold visualization
@@ -244,7 +250,7 @@ def run_polynomial_regression(degree=2, k=5):
     print(f'=== POLYNOMIAL REGRESSION (DEGREE={degree}, K-FOLD CV, K={k}) ===\n')
     
     # Load data
-    df = pd.read_csv('../data/processed/merged_dataset.csv')
+    df = pd.read_csv(DATA_PROCESSED / 'merged_dataset.csv')
     
     # Prepare X and y
     X = df.drop(['Country', 'Year', 'Credit_Rating'], axis=1)
@@ -285,7 +291,7 @@ def run_polynomial_regression(degree=2, k=5):
     model.fit(X_poly, y)
     
     # Save metrics to CSV (append mode)
-    os.makedirs('../results', exist_ok=True)
+    os.makedirs(RESULTS_DIR, exist_ok=True)
     
     metrics_df = pd.DataFrame({
         'Model': [f'Polynomial Regression (deg={degree}, K-Fold CV, K={k})'],
@@ -298,11 +304,11 @@ def run_polynomial_regression(degree=2, k=5):
     })
     
     # Append to existing file
-    if os.path.exists('../results/regression_metrics.csv'):
-        existing_df = pd.read_csv('../results/regression_metrics.csv')
+    if os.path.exists(RESULTS_DIR / 'regression_metrics.csv'):
+        existing_df = pd.read_csv(RESULTS_DIR / 'regression_metrics.csv')
         metrics_df = pd.concat([existing_df, metrics_df], ignore_index=True)
     
-    metrics_df.to_csv('../results/regression_metrics.csv', index=False)
+    metrics_df.to_csv(RESULTS_DIR / 'regression_metrics.csv', index=False)
     print('✓ Metrics saved to: results/regression_metrics.csv\n')
     
     # Save top 10 most important coefficients only (too many for polynomial)
@@ -319,11 +325,11 @@ def run_polynomial_regression(degree=2, k=5):
     })
     
     # Append to existing file
-    if os.path.exists('../results/coefficients.csv'):
-        existing_coef = pd.read_csv('../results/coefficients.csv')
+    if os.path.exists(RESULTS_DIR / 'coefficients.csv'):
+        existing_coef = pd.read_csv(RESULTS_DIR / 'coefficients.csv')
         coefficients_df = pd.concat([existing_coef, coefficients_df], ignore_index=True)
     
-    coefficients_df.to_csv('../results/coefficients.csv', index=False)
+    coefficients_df.to_csv(RESULTS_DIR / 'coefficients.csv', index=False)
     print('✓ Top 10 coefficients saved to: results/coefficients.csv\n')
     
     # Create visualization
@@ -354,8 +360,8 @@ def create_polynomial_visualization(r2_scores, degree, k=5):
     plt.tight_layout()
     
     # Save
-    os.makedirs('../results', exist_ok=True)
-    plt.savefig(f'../results/polynomial_deg{degree}_visualization.png', dpi=300, bbox_inches='tight')
+    os.makedirs(RESULTS_DIR, exist_ok=True)
+    plt.savefig(RESULTS_DIR / f'polynomial_deg{degree}_visualization.png', dpi=300, bbox_inches='tight')
     plt.close()
     
     print(f'✓ Visualization saved to: results/polynomial_deg{degree}_visualization.png\n')
@@ -368,7 +374,7 @@ def run_ridge_regression(alpha=1.0, k=5):
     print(f'=== RIDGE REGRESSION (ALPHA={alpha}, K-FOLD CV, K={k}) ===\n')
     
     # Load data
-    df = pd.read_csv('../data/processed/merged_dataset.csv')
+    df = pd.read_csv(DATA_PROCESSED / 'merged_dataset.csv')
     
     # Prepare X and y
     X = df.drop(['Country', 'Year', 'Credit_Rating'], axis=1)
@@ -409,7 +415,7 @@ def run_ridge_regression(alpha=1.0, k=5):
     model.fit(X_scaled, y)
     
     # Save metrics to CSV (append mode)
-    os.makedirs('../results', exist_ok=True)
+    os.makedirs(RESULTS_DIR, exist_ok=True)
     
     metrics_df = pd.DataFrame({
         'Model': [f'Ridge Regression (alpha={alpha}, K-Fold CV, K={k})'],
@@ -422,11 +428,11 @@ def run_ridge_regression(alpha=1.0, k=5):
     })
     
     # Append to existing file
-    if os.path.exists('../results/regression_metrics.csv'):
-        existing_df = pd.read_csv('../results/regression_metrics.csv')
+    if os.path.exists(RESULTS_DIR / 'regression_metrics.csv'):
+        existing_df = pd.read_csv(RESULTS_DIR / 'regression_metrics.csv')
         metrics_df = pd.concat([existing_df, metrics_df], ignore_index=True)
     
-    metrics_df.to_csv('../results/regression_metrics.csv', index=False)
+    metrics_df.to_csv(RESULTS_DIR / 'regression_metrics.csv', index=False)
     print('✓ Metrics saved to: results/regression_metrics.csv\n')
     
     # Save top 10 coefficients
@@ -437,11 +443,11 @@ def run_ridge_regression(alpha=1.0, k=5):
     }).sort_values('Coefficient', key=abs, ascending=False).head(10)
     
     # Append to existing file
-    if os.path.exists('../results/coefficients.csv'):
-        existing_coef = pd.read_csv('../results/coefficients.csv')
+    if os.path.exists(RESULTS_DIR / 'coefficients.csv'):
+        existing_coef = pd.read_csv(RESULTS_DIR / 'coefficients.csv')
         coefficients_df = pd.concat([existing_coef, coefficients_df], ignore_index=True)
     
-    coefficients_df.to_csv('../results/coefficients.csv', index=False)
+    coefficients_df.to_csv(RESULTS_DIR / 'coefficients.csv', index=False)
     print('✓ Coefficients saved to: results/coefficients.csv\n')
     
     print('=== COMPLETE ===\n')
@@ -456,7 +462,7 @@ def run_ridge_polynomial_regression(alpha=1.0, degree=2, k=5):
     print(f'=== RIDGE + POLYNOMIAL (DEGREE={degree}, ALPHA={alpha}, K-FOLD CV, K={k}) ===\n')
     
     # Load data
-    df = pd.read_csv('../data/processed/merged_dataset.csv')
+    df = pd.read_csv(DATA_PROCESSED / 'merged_dataset.csv')
     
     # Prepare X and y
     X = df.drop(['Country', 'Year', 'Credit_Rating'], axis=1)
@@ -502,7 +508,7 @@ def run_ridge_polynomial_regression(alpha=1.0, degree=2, k=5):
     model.fit(X_poly_scaled, y)
     
     # Save metrics to CSV (append mode)
-    os.makedirs('../results', exist_ok=True)
+    os.makedirs(RESULTS_DIR, exist_ok=True)
     
     metrics_df = pd.DataFrame({
         'Model': [f'Ridge + Polynomial (deg={degree}, alpha={alpha}, K-Fold CV, K={k})'],
@@ -515,11 +521,11 @@ def run_ridge_polynomial_regression(alpha=1.0, degree=2, k=5):
     })
     
     # Append to existing file
-    if os.path.exists('../results/regression_metrics.csv'):
-        existing_df = pd.read_csv('../results/regression_metrics.csv')
+    if os.path.exists(RESULTS_DIR / 'regression_metrics.csv'):
+        existing_df = pd.read_csv(RESULTS_DIR / 'regression_metrics.csv')
         metrics_df = pd.concat([existing_df, metrics_df], ignore_index=True)
     
-    metrics_df.to_csv('../results/regression_metrics.csv', index=False)
+    metrics_df.to_csv(RESULTS_DIR / 'regression_metrics.csv', index=False)
     print('✓ Metrics saved to: results/regression_metrics.csv\n')
     
     # Save top 10 coefficients
@@ -536,11 +542,11 @@ def run_ridge_polynomial_regression(alpha=1.0, degree=2, k=5):
     })
     
     # Append to existing file
-    if os.path.exists('../results/coefficients.csv'):
-        existing_coef = pd.read_csv('../results/coefficients.csv')
+    if os.path.exists(RESULTS_DIR / 'coefficients.csv'):
+        existing_coef = pd.read_csv(RESULTS_DIR / 'coefficients.csv')
         coefficients_df = pd.concat([existing_coef, coefficients_df], ignore_index=True)
     
-    coefficients_df.to_csv('../results/coefficients.csv', index=False)
+    coefficients_df.to_csv(RESULTS_DIR / 'coefficients.csv', index=False)
     print('✓ Top 10 coefficients saved to: results/coefficients.csv\n')
     
     print('=== COMPLETE ===\n')

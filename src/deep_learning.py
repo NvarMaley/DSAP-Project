@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
+from pathlib import Path
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -18,6 +19,11 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers, callbacks
+
+# Get the project root directory (parent of src/)
+PROJECT_ROOT = Path(__file__).parent.parent
+DATA_PROCESSED = PROJECT_ROOT / 'data' / 'processed'
+RESULTS_DIR = PROJECT_ROOT / 'results'
 
 
 def run_mlp_simple():
@@ -31,7 +37,7 @@ def run_mlp_simple():
     print('=== MLP SIMPLE (BASELINE) ===\n')
     
     # Load data
-    df = pd.read_csv('data/processed/merged_dataset_labels.csv')
+    df = pd.read_csv(DATA_PROCESSED / 'merged_dataset_labels.csv')
     
     # Prepare features and labels
     X = df.drop(['Country', 'Year', 'Credit_Rating_Label'], axis=1)
@@ -177,7 +183,7 @@ def run_mlp_improved():
     print('=== MLP IMPROVED ===\n')
     
     # Load data
-    df = pd.read_csv('data/processed/merged_dataset_labels.csv')
+    df = pd.read_csv(DATA_PROCESSED / 'merged_dataset_labels.csv')
     
     # Prepare features and labels
     X = df.drop(['Country', 'Year', 'Credit_Rating_Label'], axis=1)
@@ -520,7 +526,7 @@ def compare_optimizers():
     print('=== COMPARING OPTIMIZERS ===\n')
     
     # Load data
-    df = pd.read_csv('data/processed/merged_dataset_labels.csv')
+    df = pd.read_csv(DATA_PROCESSED / 'merged_dataset_labels.csv')
     X = df.drop(['Country', 'Year', 'Credit_Rating_Label'], axis=1)
     y = df['Credit_Rating_Label']
     
@@ -669,7 +675,7 @@ def compare_learning_rates():
     print('=== COMPARING LEARNING RATES ===\n')
     
     # Load data
-    df = pd.read_csv('data/processed/merged_dataset_labels.csv')
+    df = pd.read_csv(DATA_PROCESSED / 'merged_dataset_labels.csv')
     X = df.drop(['Country', 'Year', 'Credit_Rating_Label'], axis=1)
     y = df['Credit_Rating_Label']
     
@@ -817,7 +823,7 @@ def compare_l2_regularization():
     from tensorflow.keras import regularizers
     
     # Load data
-    df = pd.read_csv('data/processed/merged_dataset_labels.csv')
+    df = pd.read_csv(DATA_PROCESSED / 'merged_dataset_labels.csv')
     X = df.drop(['Country', 'Year', 'Credit_Rating_Label'], axis=1)
     y = df['Credit_Rating_Label']
     
