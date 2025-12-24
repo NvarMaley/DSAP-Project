@@ -15,7 +15,7 @@
 
 ### Clone the Repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/DSAP-Project.git
+git clone https://github.com/NvarMaley/DSAP-Project.git
 cd DSAP-Project
 ```
 
