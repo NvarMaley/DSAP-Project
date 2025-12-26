@@ -6,25 +6,67 @@
 
 ---
 
-## 🚀 Installation and Usage
+### **Option 1: Installation with Conda (Recommended)**
 
-### Prerequisites
-- Python 3.8+
-- pip
-- Git
-
-### Clone the Repository
+#### 1. Clone the Repository
 ```bash
-git clone https://github.com/NvarMaley/DSAP-Project.git
+git clone https://github.com/YOUR_USERNAME/DSAP-Project.git
 cd DSAP-Project
 ```
 
-### Install Dependencies
+#### 2. Create Conda Environment
+```bash
+# Create environment from environment.yml file
+conda env create -f environment.yml
+```
+
+#### 3. Activate Environment
+```bash
+conda activate dsap-project
+```
+
+#### 4. Verify Installation
+```bash
+# Verify that all dependencies are installed
+python -c "import pandas, numpy, sklearn, tensorflow, keras; print('✓ All packages installed successfully!')"
+```
+
+#### 5. Run the Project
+```bash
+# Option 1: Complete pipeline (38 steps, ~15-20 min)
+python main.py
+
+# Option 2: Interactive notebooks
+jupyter notebook
+```
+
+#### 6. Deactivate Environment (when finished)
+```bash
+conda deactivate
+```
+
+---
+
+### **Option 2: Installation with pip**
+
+#### 1. Clone the Repository
+```bash
+git clone https://github.com/YOUR_USERNAME/DSAP-Project.git
+cd DSAP-Project
+```
+
+#### 2. Create Virtual Environment (optional but recommended)
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+#### 3. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### Run the Project
+#### 4. Run the Project
 ```bash
 # Option 1: Complete pipeline
 python main.py
