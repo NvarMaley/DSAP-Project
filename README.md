@@ -28,7 +28,7 @@ conda activate dsap-project
 #### 4. Verify Installation
 ```bash
 # Verify that all dependencies are installed
-python -c "import pandas, numpy, sklearn, tensorflow, keras; print('✓ All packages installed successfully!')"
+python -c "import pandas, numpy, sklearn, tensorflow, keras; print('✓ All packages installed successfully')"
 ```
 
 #### 5. Run the Project
